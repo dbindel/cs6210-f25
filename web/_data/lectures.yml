@@ -1,0 +1,165 @@
+# ==================
+# Week 1 (intro)
+-
+  date: 2025-08-25
+  info: Introduction and linear algebra review
+  hw:
+    - info: HW 1 (due 9/8)
+-
+  date: 2025-08-27
+  info: Matrix calculus, sensitivity, conditioning
+#
+# ==================
+# Week 2
+-
+  date: 2025-09-01
+  break: Labor day
+-
+  date: 2025-09-03
+  info: Matrix representations and operations
+#
+# ==================
+# Week 3
+-
+  date: 2025-09-08
+  info: Floating point and error analysis
+  hw:
+    - info: HW 2 (due 9/15)
+-
+  date: 2025-09-10
+  info: Floating point error, backward error analysis, conditioning
+#
+# ==================
+# Week 4
+-
+  date: 2025-09-15
+  info: Gaussian elimination and Cholesky I
+  hw:
+    - info: HW 3 (due 9/22)
+-
+  date: 2025-09-17
+  info: Gaussian elimination and Cholesky II
+#
+# ==================
+# Week 5
+-
+  date: 2025-09-22
+  info: Sparse direct solvers
+  hw:
+    - info: HW 4 (due 9/29)
+-
+  date: 2025-09-24
+  info: Introduction to least squares
+#
+# ==================
+# Week 6
+-
+  date: 2025-09-29
+  info: Householder, Givens, and QR factorization
+  hw:
+    - info: Midterm (due 10/10)
+-
+  date: 2025-10-01
+  info: Sensitivity analysis and ill-posedness
+#
+# ==================
+# Week 7
+-
+  date: 2025-10-06
+  info: Rank deficiency and regularization
+-
+  date: 2025-10-08
+  info: Constraints, sparsity, and projectors
+#
+# ==================
+# Week 8
+-
+  date: 2025-10-13
+  break: Fall break
+-
+  date: 2025-10-15
+  info: Matrix nearness problems
+  hw:
+    - info: HW 5 (due 10/27)
+#
+# ==================
+# Week 9
+-
+  date: 2025-10-20
+  info: Introduction to eigenvalues
+-
+  date: 2025-10-22
+  info: Perturbation theory
+#
+# ==================
+# Week 10
+-
+  date: 2025-10-27
+  info: Power method and subspace iteration
+  hw:
+    - info: HW 6 (due 11/03)
+-
+  date: 2025-10-29
+  info: Hessenberg QR iteration
+#
+# ==================
+# Week 11
+-
+  date: 2025-11-03
+  info: Theory for SEP and SVD
+  hw:
+    - info: HW 7 (due 11/10)
+-
+  date: 2025-11-05
+  info: Solvers for SEP and SVD
+#
+# ==================
+# Week 12
+#-
+#  date: 2025-11-10
+#  info: Other eigenvalue problems
+-
+  date: 2025-11-10
+  info: Stationary iterations
+  hw:
+    - info: HW 8 (due 11/17)
+-
+  date: 2025-11-12
+  info: Approximation from Krylov subspaces
+#
+# ==================
+# Week 13
+-
+  date: 2025-11-17
+  info: Lanczos and Arnoldi factorization
+  hw:
+    - info: HW 9 (due 11/24)
+-
+  date: 2025-11-19
+  info: CG and GMRES
+#
+# ==================
+# Week 14
+-
+  date: 2025-11-24
+  info: Preconditioning
+-
+  date: 2025-11-26
+  break: Thanksgiving
+#
+# ==================
+# Week 15
+-
+  date: 2025-12-01
+  info: Krylov for eigenproblems
+  hw:
+    - info: HW 10 (due 12/8)
+-
+  date: 2025-12-03
+  info: Krylov for eigenproblems
+#
+# ==================
+# Week 16
+-
+  date: 2025-12-08
+  info: Review

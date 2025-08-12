@@ -1,0 +1,21 @@
+desc "Manage web site publication"
+
+dest = "cslinux:/courses/cs6210/2025fa"  # Destination
+
+task :serve => [:build] do
+  sh "jekyll serve"
+end
+
+task :clean do
+  sh "rm -rf _site"
+end
+
+task :build do
+  #sh "(cd ../lec; make; make copy)"
+  #sh "(cd ../hw; make; make copy)"
+  sh "jekyll build"
+end
+
+task :deploy => [:build] do
+  sh "rsync -avzL _site/ #{dest} || true"
+end
