@@ -3,11 +3,13 @@
 -
   date: 2025-08-25
   info: Introduction and linear algebra review
+  notes: 2025-08-25.html
   hw:
     - info: HW 1 (due 9/8)
 -
   date: 2025-08-27
   info: Matrix calculus, sensitivity, conditioning
+  notes: 2025-08-27.html
 #
 # ==================
 # Week 2

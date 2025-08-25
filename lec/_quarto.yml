@@ -1,0 +1,24 @@
+project:
+  type: website
+  output-dir: _output
+  render:
+    - "2025-*.qmd"
+
+bibliography: references.bib
+
+engine: knitr
+
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrartcl
+    pdf-engine: lualatex
+    include-in-header:
+      text: |
+          \usepackage{amsmath}
+          \usepackage{amssymb}
+          \usepackage{fontspec}
+          \usepackage{polyglossia}
+          \setmonofont{DejaVu Sans Mono}[Scale=MatchLowercase]
+          \input{_common.tex}
