@@ -17,7 +17,7 @@ Phone: 607-255-5395
 E-mail: <bindel@cornell.edu>  
 OH: TBA
 
-TA: Mai Pham  
+TA: Mai Huynh  
 E-mail: <ph463@cornell.edu>  
 OH: TBA
 
