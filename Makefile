@@ -13,4 +13,5 @@ clean:
 deploy: build
 	(cd web; rsync -avzL _site/ $(DEST) || true)
 	(cd lec; rsync -avzL _output/ $(DEST)/lec || true)
+	(cd hw;  rsync -avzL hw*.jl hw*.html $(DEST)/hw  || true)
 
