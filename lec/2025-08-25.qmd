@@ -198,10 +198,10 @@ $$\begin{aligned}
   \mathcal{C}^k(\Omega) &=
   \{\mbox{ $k$-times differentiable functions on a set $\Omega$} \};
 \end{aligned}$$
-and many more. We compute with vectors in $\bbR^n$ and
-$\bbC^n$, which we represent concretely by tuples of numbers in memory,
-usually stored in sequence. To keep a broader perspective, though, we
-will also frequently describe examples involving the polynomial spaces
+and many more. We compute with vectors in $\bbR^n$ and $\bbC^n$, which
+we represent concretely by tuples of numbers in memory, usually stored
+in sequence. To keep a broader perspective, though, we will also
+frequently describe examples involving the polynomial spaces
 $\mathcal{P}_d$.
 
 ## Spanning sets and bases

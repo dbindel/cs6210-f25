@@ -314,7 +314,6 @@ $$
   \kappa[f(x)] =
   \frac{M_{f(x)}|x|}{|f(x)|}.
 $$
-
 where $M_f$ is the smallest constant such that 
 $|f(x+h)-f(x)| \leq M_f |h| + o(|h|)$.
 When the problem has no linear bound on the output error relative to
