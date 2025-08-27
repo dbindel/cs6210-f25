@@ -197,7 +197,8 @@ $$\begin{aligned}
   \{ \mbox{linear maps $\calV \rightarrow \calW$} \}; \\
   \mathcal{C}^k(\Omega) &=
   \{\mbox{ $k$-times differentiable functions on a set $\Omega$} \};
-\end{aligned}$$ and many more. We compute with vectors in $\bbR^n$ and
+\end{aligned}$$
+and many more. We compute with vectors in $\bbR^n$ and
 $\bbC^n$, which we represent concretely by tuples of numbers in memory,
 usually stored in sequence. To keep a broader perspective, though, we
 will also frequently describe examples involving the polynomial spaces
@@ -487,11 +488,11 @@ domain spaces; that is, for any $w$ and $v$, we want
 $$
 w = Av \implies \|w\| \leq \|A\| \|v\|.
 $$
-One "obvious" consistentnorm is the *Frobenius norm*,
+One "obvious" consistent norm is the *Frobenius norm*,
 $$
 \|A\|_F = \sqrt{ \sum_{i,j} a_{ij}^2 }.
 $$
-Even more useful are*induced norms* (or *operator norms*)
+Even more useful are *induced norms* (or *operator norms*)
 $$
 \|A\| = \sup_{v \neq 0} \frac{\|Av\|}{\|v\|} = \sup_{\|v\|=1} \|Av\|.
 $$
@@ -615,8 +616,10 @@ singular values, which is the same as just the largest singular value.
 
 The small singular values also have a meaning. If $A$ is a square,
 invertible matrix then
-$$\|A^{-1}\|_2 = \|V \Sigma^{-1} U^*\|_2 = \|\Sigma_{-1}\|_2,$$
-i.e. $\|A^{-1}|_2$ is the inverse of the smallest singular value of $A$.
+$$
+  \|A^{-1}\|_2 = \|V \Sigma^{-1} U^*\|_2 = \|\Sigma^{-1}\|_2,
+$$
+i.e. $\|A^{-1}\|_2$ is the inverse of the smallest singular value of $A$.
 
 The smallest singular value of a nonsingular matrix $A$ can also be
 interpreted as the "distance to singularity": if $\sigma_n$ is the

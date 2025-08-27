@@ -1,0 +1,722 @@
+---
+title: "CS 6210: Matrix Computations"
+subtitle: Introduction
+author: David Bindel
+date: 2025-08-25
+format:
+  revealjs:
+    embed-resources: true
+    code-annotations: below
+    html-math-method: mathjax
+---
+
+# Vector spaces
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+```{julia}
+#|echo: false
+#|output: false
+using Plots
+```
+
+## Concrete spaces
+
+Example vector:
+$$
+  v = \begin{bmatrix} v_1 \\ v_2 \end{bmatrix} \in \bbR^2
+$$
+Set of such vectors forms a *concrete* vector space.
+
+- Most common cases: $\bbR^n$ and $\bbC^n$
+- We denote these as columns (statisticians default to rows)
+- What we actually compute with (except in floating point)
+- But not the whole game...
+
+## Abstract spaces
+
+Ingredients:
+
+- Set $\calV$ of vectors (including a zero vector)
+- Scalar field $\mathbb{F}$ ($\bbR$ or $\bbC$ for us)
+- Sensible addition and scalar multiplication operations
+
+## Axioms
+
+Need for all $u, v, w \in \calV$ and $\alpha \in \mathbb{F}$:
+$$\begin{aligned}
+  0 v &= 0 & 1 v &= v \\
+  u + v &= v + u &
+  (u + v) + w &= u + (v + w) \\
+  \alpha (u + v) &= \alpha u + \alpha v &
+  (\alpha + \beta) u &= \alpha u + \beta u
+\end{aligned}$$
+
+## Examples
+
+$$\begin{aligned}
+  \mathcal{P}_d &=
+  \{ \mbox{polynomials of degree at most $d$} \} \\
+  \mathcal{V}^* &=
+  \{ \mbox{linear functions $\mathcal{V} \rightarrow \bbR$ (or $\bbC$)} \} \\
+  L(\mathcal{V}, \mathcal{W}) &=
+  \{ \mbox{linear maps $\calV \rightarrow \calW$} \} \\
+  \mathcal{C}^k(\Omega) &=
+  \{\mbox{ $k$-times differentiable functions on a set $\Omega$} \}
+\end{aligned}$$
+
+- Mostly interested in finite-dimensional case
+- ... but $C^k$ is an infinite-dimensional example!
+
+## Subspaces
+
+$\calU$ is a *subspace* of vector space $\calV$ if
+
+- $\calU$ is a subset of $\calV$
+- $\calU$ is closed under the vector space operations
+
+Sums of subspaces $\calV_1 \subset \calV$ and $\calV_2 \subset \calV$:
+
+- $\calV_1 + \calV_2 = \{ v_1 + v_2 : v_1 \in \calV_1, v_2 \in
+  \calV_2 \}$
+- $\calV_1 + \calV_2$ is a subspace of $\calV$ (tedious exercise: show it!)
+- *Direct sum* $\calV_1 \oplus \calV_2$ if decomposition $v_1+v_2$ is unique
+
+Can also quotient: $[v] \in \calV / \calU = \{ v + u : u \in \calU \}$.
+
+## Direct sum decompositions
+
+When $\calV = \calV_1 \oplus \calV_2$, we have *component projectors*
+$$
+  \Pi_1 (v_1 + v_2) = v_1, \quad
+  \Pi_2 (v_1 + v_2) = v_2
+$$
+Example: $\calP_d$ is a direct sums of even and odd subspaces
+$$\begin{aligned}
+  (\Pi_{\mathrm{even}} q)(x) &= \frac{1}{2} (q(x) + q(-x)) \\
+  (\Pi_{\mathrm{odd}} q)(x) &= \frac{1}{2} (q(x) - q(-x))
+\end{aligned}$$
+Idea generalizes to when $\calV = \calV_1 \oplus \ldots \oplus \calV_k$.
+
+# Spanning sets and bases
+
+## Spanning sets
+
+$S \subset \calV$ a *spanning set* if any $v \in \calV$
+is a *linear combination*
+$$
+  v = \sum_{j=1}^m \alpha_j s_j
+$$
+for some $s_j \in S$ and $\alpha_j \in \mathbb{F}$.
+
+Example: $\calP_2 = \span\{1, x, -x, x^2\}$.
+
+## Linear independence
+
+$S \subset \calV$ is *linearly independent* if any $v \in \calV$ is
+*unique* as
+$$
+  v = \sum_{j=1}^m \alpha_j s_j.
+$$
+Equivalent: $S \subset \calV$ if no nontrivial linear combination
+gives 0.
+
+Example:
+
+- $\{1, x, -x, x^2\}$ is *not* linearly independent ($x + -x = 0$)
+- $\{1, x, x^2\}$ *is* linearly independent
+
+## Bases
+
+$S \subset \calV$ is a *basis* if
+
+- $S$ is a spanning set
+- $S$ is linearly independent
+
+If $S$ is a basis, $d = |S|$ is the *dimension*.
+
+- But dimension doesn't actually depend on the basis
+
+## Dual bases
+
+Basis $\{ w_1^*, \ldots, w_d^* \}$ for $\calV^*$ and
+basis $\{ v_1, \ldots, v_d \}$ for $\calV$ are *dual* to each
+other if
+$$
+  w_i^* \left( \sum_{j=1}^d \alpha_j v_j \right) = \alpha_i.
+$$
+Equivalently: $w_i^* v_j = \delta_{ij}$.
+
+## Basis quasimatrices
+
+- Conventional linear algebra: work with basis *sets*
+- *But* we invariably give the elements indices (usually integer)!
+- Idea: just use ordered lists vs sets
+- Notation: write as *quasimatrices*
+
+## Basis quasimatrices
+
+Basis quasimatrix $V = \begin{bmatrix} v_1 & \ldots & v_d
+\end{bmatrix}$ for $\mathcal{V}$
+
+- Ordered list written like a matrix
+- Each column is an abstract vector
+- Matrix-vector products denote linear combinations
+- Represents mapping from *concrete* space to *abstract* space
+
+## Basis quasimatrices
+
+*Dual* basis quasimatrix
+$W^* = \begin{bmatrix} w_1^* \\ \vdots \\ w_d^* \end{bmatrix}$ for
+$\calV^*$
+
+- Each row is an abstract dual vector (element of $\calV^*$)
+- $W^*$ maps *abstract* space to *concrete* space
+- If $W^*$ and $V$ are dual basis quasimatrices ($W^* = V^{-1}$)
+  - $W^* V = I$ (identity on concrete space)
+  - $V W^* = I$ (identity on abstract space)
+
+## Example: Concrete space
+
+*Standard* basis for $\bbR^n$ has elements
+
+$$
+e_1 = \begin{bmatrix} 1 \\ 0 \\ 0 \\ \vdots \\ 0 \end{bmatrix},~~
+e_2 = \begin{bmatrix} 0 \\ 1 \\ 0 \\ \vdots \\ 0 \end{bmatrix},~~
+e_3 = \begin{bmatrix} 0 \\ 0 \\ 1 \\ \vdots \\ 0 \end{bmatrix},~~
+\cdots,~~
+e_n = \begin{bmatrix} 0 \\ 0 \\ 0 \\ \vdots \\ 1 \end{bmatrix}
+$$
+
+Basis quasimatrix looks like $I$.  This is not very interesting!
+
+## Example: Polynomials
+
+```{julia}
+#|echo: false
+plot(range(-1.0, 1.0, length=100), x->1+x^2,
+     legend=false, linewidth=4, linecolor=:purple)
+```
+
+## Power basis
+
+Example: Power basis for $\calP_2$ is
+$$
+  P = \begin{bmatrix} 1 & x & x^2 \end{bmatrix}
+$$
+Write $p(x) = 1 + x^2$ as
+$$
+  p = \begin{bmatrix} 1 & x & x^2 \end{bmatrix}
+      \begin{bmatrix} 1 \\ 0 \\ 1 \end{bmatrix}
+$$
+
+## Chebyshev polynomials
+
+Can also make basis of *Chebyshev polynomials*:
+$$\begin{aligned}
+T_0(x) &= 1 \\
+T_1(x) &= x \\
+T_{k+1}(x) &= 2xT_k(x) - T_{k-1}(x), \quad k > 1
+\end{aligned}$$
+Note:
+$$
+  T_k(\cos(\theta)) = \cos(k\theta)
+$$
+Chebyshev polynomials *equi-oscillate* on $[-1,1]$.
+
+## Chebyshev polynomials
+
+```{julia}
+#|echo: false
+let
+    xx = range(-1.0, 1.0, length=100)
+    p = []
+    for d = 0:5
+        pd = plot(xx, x->cos(d*acos(x)), linewidth=4, legend=false,
+                  yrange=[-1.01,1.01])
+        push!(p, pd)
+    end
+    plot(p..., grid=(3,2))
+end
+```
+
+## Chebyshev basis
+
+Two bases for $\calP_d$:
+
+- Power: $P_d = \begin{bmatrix} 1 & x & \ldots & x^d \end{bmatrix}$
+- Chebyshev: $T_d = \begin{bmatrix} T_0(x) & T_1(x) & \ldots & T_d(x) \end{bmatrix}$
+
+Change of basis example: $T_2 = P_2 X$ where
+$$
+X =
+\begin{bmatrix}
+1 & 0 & -1 \\
+0 & 1 & 0 \\
+0 & 0 & 2
+\end{bmatrix}.
+$$
+Question: How would you compute $X$ for general $d$?
+
+# Norms
+
+## Properties of a norm
+
+Norm is $\| \cdot \| : \calV \rightarrow \bbR$ satisfying
+
+- *Positive definiteness*: $\|v\| \geq 0$ with equality iff $v = 0$
+- *Triangle inequality*: $\|u+v\| \leq \|u\| + \|v\|$
+- *Homogeneity*: $\|\alpha v\| = |\alpha| \, \|v\|$
+
+An aside:
+
+- First two properties: $d(u,v) = \|u-v\|$ is a *metric*
+- Completeness wrt this metric means $\calV$ is a *Banach space*
+- Finite-dimensional normed vector spaces over $\bbR$ and $\bbC$
+  are all Banach spaces.
+
+## Concrete space norms
+
+Our three favorite norms for $\bbR^n$ (or $\bbC^n$) are
+the 2-norm (Euclidean norm), 1-norm (Manhattan norm) and $\infty$-norm
+(max norm):
+$$\begin{aligned}
+\|x\|_2 &= \sqrt{\sum_{j=1}^n |x_j|^2} \\
+\|x\|_1 &= \sum_{j=1}^n |x_j| \\
+\|x\|_\infty &= \max_{j=1}^n |x_j|
+\end{aligned}$$
+
+## Polynomial space norms
+
+For polynomials on $[-1,1]$, favorite norms are:
+$$\begin{aligned}
+\|p\|_2 &= \sqrt{\int_{-1}^1 |p(x)|^2 \, dx} \\
+\|p\|_1 &= \int_{-1}^1 |p(x)| \, dx \\
+\|p\|_\infty &= \max_{x \in [-1,1]} |p(x)|
+\end{aligned}$$
+Q: What are these for $p(x) = x$?
+
+## Norm equivalence
+
+Norms $\|\cdot\|$ and $\|\cdot\|_*$ are *equivalent* if $\exists c,
+C > 0$ s.t.
+$$
+\forall v \in \calV, c\|v\| \leq \|v\|_* \leq C\|v\|.
+$$
+
+- All norms on finite-dimensional spaces are equivalent
+- Says nothing about the size of $c$ and $C$!
+- Statement on *topology*, not *geometry* of f-d spaces
+
+Q: Find $c, C$ relating $\|\cdot\|_1$ and $\|\cdot\|_\infty$ on $\bbR^n$?
+
+# Inner products
+
+## Properties of an inner product
+
+Function $\langle \cdot, \cdot \rangle : \calV \times \calV \rightarrow \bbR$
+(or $\bbC$) satisfying:
+
+- *Linearity in first slot*: $\langle \alpha v, w \rangle =
+  \alpha \langle v, w \rangle$ and $\langle u+v, w \rangle = \langle
+  u, w \rangle + \langle v, w \rangle$.
+- *Hermitian* (or *symmetric*): $\langle v, w \rangle =
+  \overline{\langle w, v \rangle}$.
+- *Positive definiteness*: $\langle v, v \rangle \geq 0$ with equality
+  iff $v = 0$.
+
+Check: $\|v\| = \sqrt{\langle v, v \rangle}$ is a norm (the Euclidean
+norm for the inner product).
+
+## Terminology
+
+An inner product is a positive definite
+
+- symmetric bilinear form  (for $\bbR$) OR 
+- Hermitian sesquilinear form (for $\bbC$)
+
+## Standard inner product
+
+On $\bbR^n$ or $\bbC^n$, the *standard inner product* (*dot product*) is
+$$
+  \langle x, y \rangle = \sum_{j=1}^n x_j \overline{y}_j = y^* x.
+$$
+This is not the only inner product even on these spaces!
+
+## Expanding the square
+
+We do something like this a lot:
+$$\begin{aligned}
+\|v+w\|^2 
+&= \langle v+w, v+w \rangle \\
+&= \langle v, v \rangle + \langle v, w \rangle +
+   \langle w, v \rangle + \langle w, w \rangle \\
+&= \|v\|^2 + 2\Re \langle v, w \rangle + \|w\|^2
+\end{aligned}$$
+This turns out to be useful in theory and in computation!
+
+## Cauchy-Schwarz
+
+For real spaces:
+$$\begin{aligned}
+  \|v+2\|^2
+  &= \|v\|^2 + 2 \langle v, w \rangle + \|w\|^2 \\
+  \|v+w\|^2 
+  &\leq (\|v\|+\|w\|)^2 \\
+  &= \|v\|^2 + 2\|v\|\|w\| + \|w\|^2
+\end{aligned}$$
+Therefore
+$$
+  \langle v, w \rangle \leq \|v\| \|w\|
+$$
+More generally: $|\langle v, w \rangle| \leq \|v\| \|w\|$.
+
+## Law of cosines
+
+Define angle between $v$ and $w$ (for a real space) by
+$$
+  \cos(\theta) = \frac{\langle v, w \rangle}{\|v\| \|w\|}.
+$$
+Then expanding square is equivalent to
+$$
+  \|v+w\|^2 = \|v\|^2 + 2 \|v\| \|w\| \cos(\theta) + \|w\|^2.
+$$
+This is the *law of cosines* from basic trig.
+
+## Pythagorean theorem
+
+Suppose $\langle v, w \rangle = 0$, i.e. $v$ and $w$ are *orthogonal*
+or *normal*.  Then
+$$
+  \|v+w\|^2 
+  = \|v\|^2 + 2\Re \langle v, w \rangle + \|w\|^2
+  = \|v\|^2 + \|w\|^2.
+$$
+This is the *Pythagorean theorem*.
+
+## Polynomial inner product
+
+For polynomials, the $L^2([-1,1])$ inner product is
+$$
+  \langle p, q \rangle = \int_{-1}^1 p(x) \overline{q(x)} \, dx.
+$$
+This is analogous to the standard inner product on $\bbR^n$.
+
+## Gram matrices
+
+Suppose $V$ is a basis for an inner product space $\calV$.
+$$\begin{aligned}
+\langle Vc, Vd \rangle
+&= \left\langle \sum_j v_j c_j, \sum_i v_i d_i \right\rangle \\
+&= \sum_{i,j} \langle v_j, v_i \rangle c_j \overline{d}_i \\
+&= \sum_{i,j} g_{ij} c_j \overline{d}_i = d^* G c
+\end{aligned}$$
+The *Gram matrix* $G$ of outer products is symmetric (Hermitian) and
+positive definite.
+
+## Orthonormal bases
+
+A basis $V$ is *orthonormal* if
+
+- $\langle v_i, v_j \rangle = \delta_{ij}$ or equivalently
+- The Gram matrix is $I$
+
+An orthonormal basis is an *isometry* between the concrete and
+abstract spaces (with respect to the Euclidean norms):
+$$
+  \|Vc\| = \|c\|.
+$$
+
+## Legendre polynomials
+
+Consider *Legendre polynomials* (usually on $[-1,1]$)
+$$\begin{aligned}
+  P_0(x) &= 1 \\
+  P_1(x) &= x \\
+  P_k(x) &= (n+1) P_{n+1}(x) = (2n+1) x P_n(x) - n P_{n-1}(x)
+\end{aligned}$$
+Satisfies
+$$
+  \langle P_n, P_m \rangle = \frac{2}{2n+1} \delta_{mn}.
+$$
+
+## Scaled Legendre polynomials
+
+*Scaled* Legendre polynomials form orthonormal bases for $\calP_d$:
+$$
+  Q_n = \sqrt{\frac{2}{2n+1}} P_n
+$$
+These are very useful in function approximation.
+
+# Mappings in linear algebra
+
+## What does a matrix mean?
+
+Intro class: "matrices represent linear maps."  
+But there's more to the story!
+
+## Linear maps
+
+Suppose $V, W$ are bases for $\calV, \calW$ and
+$\mathcal{A} \in L(\calV, \calW)$.  
+Matrix is given by:
+$$
+  A = W^{-1} \mathcal{A} V
+$$
+That is $y = Ax$ represents
+$$
+  (Wy) = \mathcal{A} (Vx)
+$$
+
+## Operators
+
+Suppose $V$ a basis for $\calV$ and $\mathcal{A} \in L(\calV,
+\calV)$.  
+Matrix is given by:
+$$
+  A = V^{-1} \mathcal{A} V.
+$$
+That is, $y = Ax$ represents
+$$
+  (Vy) = \mathcal{A} (Vx).
+$$
+We say $A$ and $\mathcal{A}$ are *similar* (and $A = V^{-1}
+\mathcal{A} V$ is a *similarity transformation*).
+
+## Bilinear forms
+
+Suppose $V, W$ are bases for $\calV, \calW$ and $a : \calV \times
+\calW \rightarrow \bbR$ is *bilinear* (linear in both
+slots).  
+Then for the matrix $A$ with entries
+$$
+  a_{ij} = a(v_j, w_i),
+$$
+we have
+$$
+  a(Vx,Wy) = y^T A x
+$$
+
+## Sesquilinear forms
+
+Suppose $V, W$ are bases for $\calV, \calW$ and $a : \calV \times
+\calW \rightarrow \bbC$ is *sesquilinear* (linear in first
+slot, conjugate linear in second).  
+Then for the matrix $A$ with entries
+$$
+  a_{ij} = a(v_j, w_i),
+$$
+we have
+$$
+  a(Vx,Wy) = y^* A x
+$$
+
+## Quadratic forms
+
+Suppose $V$ a basis for $\calV$ and $\phi : \calV \rightarrow \bbR$
+is a *quadratic form*: $\phi(v) = a(v,v)$ for a symmetric bilinear
+form $a$.  
+Then for the matrix $A$ with entries
+$$
+  a_{ij} = a(v_j, v_i)
+$$
+we have
+$$
+  \phi(Vx) = x^T A x.
+$$
+
+## Quadratic forms
+
+Q: How could we get $a(v_i,v_j)$ given just access to $\phi$?  
+*Hint*: Think about expanding $\phi(v_i+v_j)$!
+
+# Matrix norms
+
+## Norms for maps
+
+$L(\calV, \calW)$ is a vector space
+
+- Can have structures like other norms, inner products
+  - Ex: *Frobenius* inner product $\langle A, B \rangle_F = \tr(B^*
+    A)$
+  - Concrete case: $\langle A, B \rangle_F = \sum_{i,j} a_{ij} \overline{b}_{ij}$
+- What are some desireable properties?
+
+## Consistency
+
+A norm on $L(\calV, \calW)$ is *consistent* with norms on $\calV,
+\calW$ if
+$$
+  \|Av\| \leq \|A\| \|v\|.
+$$
+Ex: Frobenius norm is consistent with two norms:
+$$
+  \|Ax\|_2 \leq \|A\|_F \|x\|_2
+$$
+Q: Why?  (Hint: only one named inequality in these slides!)
+
+## Induced norms
+
+If $\calV$ and $\calW$ have norms, the *induced* norm on
+$L(\calV,\calW)$ is
+$$
+  \|\mathcal{A}\|_{\calV,\calW} = \max_{v \neq 0} \frac{\|\mathcal{A}v\|_\calW}{\|v\|_{\calV}}
+$$
+For concrete case with our favorite norms, we have
+$$\begin{aligned}
+  \|A\|_1 &= \max_j \sum_i |a_{ij}| \\
+  \|A\|_\infty &= \max_i \sum_j |a_{ij}| \\
+  \|A\|_2 &= \mbox{???}
+\end{aligned}$$
+
+# Decompositions
+
+## Factorization paradigm
+
+Basic idea: Write $A$ as a product of other matrices!
+$$\begin{aligned}
+PA &= LU & \mbox{Gaussian elimination} \\
+A &= QR & \mbox{Used for least squares, etc} \\
+A &= U \Sigma V^* & \mbox{Singular value decomposition} \\
+A &= V \Lambda V^{-1} & \mbox{Eigenvalue decomposition} \\
+A &= U T U^* & \mbox{Schur decomposition}
+\end{aligned}$$
+Claim the last three are different from first two!
+
+## Canonical decompositions
+
+*Canonical form*: "simplest" matrix for any bases.
+
+- Have canonical forms for maps, operators, quadratic forms
+- Intro linear algebra: Mostly consider *any* bases
+- Numerical linear algebra: Mostly consider *orthonormal* bases
+
+## Rank and nullity
+
+Mapping type: $L(\calV, \calW)$ or bilinear or sesquilinear forms  
+No restrictions on bases.  
+Canonical form:
+$$
+  \begin{bmatrix}
+    I_{r \times r} & 0_{r \times (n-r)} \\
+    0_{(m-r) \times r}  & 0_{(m-r) \times (n-r)}
+  \end{bmatrix}
+$$
+Rank is $r$, null space dimension is $n-r$.
+
+Decomposition: $\mathcal{A} = X_1 Y_1^*$ where $X$ and $Y^*$ are bases
+for $\calW$ and $\calV^*$.
+
+## Singular value decomposition
+
+Mapping type: $L(\mathcal{V}, \mathcal{W})$ or bilinear or
+sesquilinear forms  
+Restrict to orthonormal bases.  
+Canonical form:
+$$
+  \begin{bmatrix}
+    \Sigma_1 & 0_{r \times (n-r)} \\
+    0_{(m-r) \times r}  & 0_{(m-r) \times (n-r)}
+  \end{bmatrix}
+$$
+where $\Sigma_1 = \operatorname{diag}(\sigma_1, \ldots, \sigma_r)$ with
+$\sigma_1 \geq \sigma_2 \geq \ldots \geq \sigma_r > 0$ the nonzero
+*singular values*.
+
+Decomposition: $\mathcal{A} = U_1 \Sigma_1 V_1^*$ (economy SVD)
+
+## Jordan form
+
+Mapping type: $L(\calV, \calV)$.  
+No restriction on basis.  
+Canonical form (almost all matrices):
+$$
+  \Lambda = \operatorname{diag}(\lambda_1, \lambda_2, \ldots, \lambda_n),
+$$
+where $\lambda_j$ are the *eigenvalues* (basis of *eigenvectors*).
+
+Decomposition: $\mathcal{A} = V \Lambda V^{-1}$
+
+Sometimes need generalized eigenvectors, which gives
+the more complicated Jordan form.
+
+## Schur form
+
+Mapping type: $L(\calV, \calV)$ (over $\bbC$).  
+Restrict to orthonormal basis.  
+Canonical form (all matrices):
+$$
+  T \mbox{ upper triangular, i.e. } t_{ij} = 0 \mbox{ for } i > j.
+$$
+
+Decomposition: $\mathcal{A} = U T U^*$.
+
+Prefixes of the basis vectors span *invariant subspaces*.
+
+## Sylvester inertia
+
+Mapping type: Quadratic form $\phi$.  
+No restriction on basis.  
+Canonical form:
+$$
+\begin{bmatrix}
+I_{\nu_+} & 0 & 0 \\
+0 & 0_{\nu_0} & 0 \\
+0 & 0 & -I_{\nu_-}
+\end{bmatrix}
+$$
+where the triple $\nu = (\nu_+, \nu_0, \nu_-)$ is *Sylvester's
+inertia*.
+
+Corresponds to decomposing the space into positive curvature, zero
+curvature, and negative curvature subspaces.
+
+## Symmetric eigendecomposition
+
+Mapping type: Quadratic form $\phi$.  
+No restriction on basis.  
+Canonical form:
+$$
+\Lambda = \operatorname{diag}(\lambda_1, \ldots, \lambda_n)
+$$
+where $\lambda_1 \geq \lambda_2 \geq \ldots$ are eigenvalues and the
+first $\nu_+$ of the eigenvalues are positive, the next $\nu_0$ are
+zero, and the remaining $\nu_-$ are negative.  The basis is
+eigenvectors.
+
+Decomposition: $\phi(x) = x^T Q \Lambda Q^T x$ or 
+$\phi(Qy) = y^T \Lambda y$.
+
+# SVD and 2-norm
+
+## Unitary invariance
+
+For $U$ an orthonormal basis or a unitary matrix (columns are an
+orthonormal basis for $\bbC^n$): $\|Ux\| = \|x\|$
+
+Therefore if $A = U \Sigma V^*$ is the full SVD:
+$$
+  \frac{\|Ax\|_2}{\|x\|_2} =
+  \frac{\|U\Sigma V^* x\|_2}{\|x\|_2} =
+  \frac{\|\Sigma V^* x\|_2}{\|V^* x\|_2}.
+$$
+
+## SVD and 2-norm
+
+Therefore, maximizing $\|Ax\|_2/\|x\|_2$ is equivalent to maximizing
+$$
+  \sqrt{\|\Sigma y\|_2^2/\|y\|_2^2} =
+  \sqrt{\sum_j \sigma_j^2 w_j}
+$$
+where the weights $w_j = y_j^2/\|y\|^2$ are positive and sum to one.
+The maximum possible value of the weighted average is $\sigma_1$
+
+## Inverse norm
+
+Similar logic on $A^{-1} = V \Sigma^{-1} U^*$ gives
+$$
+  \|A^{-1}\|_2 = \sigma_n^{-1}.
+$$
+

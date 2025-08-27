@@ -1,0 +1,309 @@
+---
+title: "CS 6210: Matrix Computations"
+subtitle: Matrix calculus, sensitivity, conditioning
+author: David Bindel
+date: 2025-08-27
+format:
+  revealjs:
+    embed-resources: true
+    code-annotations: below
+    html-math-method: mathjax
+---
+
+# Matrix calculus
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+```{julia}
+#|echo: false
+#|output: false
+using Plots
+using LinearAlgebra
+```
+## Warm up: dot
+
+Consider:
+$$
+  f = y^T x = \sum_i x_i y_i
+$$
+Then
+$$\begin{aligned}
+  \frac{\partial f}{\partial x_j} &= y_j, &
+  \frac{\partial f}{\partial y_j} &= x_j
+\end{aligned}$$
+
+## Warm up: dot
+
+Alternate notation:
+$$
+  f(s) = (y + s \, \delta y)^T (x + s \, \delta x)
+$$
+Then
+$$
+  f'(0) = y^T \, \delta x + \delta y^T x
+$$
+Generally suppress the scaling variable $s$ and write
+$$
+  \delta f = y^T \, \delta x + \delta y^T x.
+$$
+*Variational notation* for a Gateaux (directional) derivative.
+
+## Warm up: dot
+
+Just to be sure!
+```{julia}
+#|echo: true
+let
+    x, y   = [0.894; 0.340], [0.253; 0.098]
+    δx, δy = [0.660; 0.703], [0.871; 0.861]
+    
+    # Analytic formula
+    δf = δy'*x + y'*δx
+
+    # Finite difference estimate
+    h = 1e-6
+    fp = (y+h*δy)'*(x+h*δx)
+    fm = (y-h*δy)'*(x-h*δx)
+    δfp_fd = (fp-fm)/(2h)
+
+    δf, δfp_fd
+end
+```
+
+## One step further
+
+Matrix product rule:
+$$
+  \delta (AB) = (\delta A) B + A (\delta B)
+$$
+Like usual product rule -- but $A$ and $B$ don't commute!
+
+## Implicit differentiation
+
+Consider $B = A^{-1}$ and differentiate $AB = I$:
+$$
+  \delta (AB) = (\delta A) B + A (\delta B) = 0.
+$$
+Rearrange to get
+$$
+  \delta(A^{-1}) = \delta B = -A^{-1} (\delta A) A^{-1}.
+$$
+Much easier than differentiating componentwise!
+
+## Implicit differentiation
+
+```{julia}
+#|echo: true
+let
+    A  = [ 0.195779  0.260043; 0.143334  0.227521 ]
+    δA = [ 0.28452   0.231571; 0.501511  0.419521 ]
+
+    # Analytic formula
+    δB = -A\δA/A
+
+    # Finite difference formula
+    h = 1e-6
+    δB_fd = (inv(A+h*δA)-inv(A-h*δA))/(2h)
+
+    # Check that approximation is good
+    isapprox(δB, δB_fd, rtol=1e-8)
+end
+```
+
+## Squared norms
+
+Vector two norm:
+$$\delta(\|x\|^2) = 2 \Re(\delta x^* x)$$
+
+Frobenius norm:
+$$\delta(\|A\|^2) = 2 \Re(\delta A^* A)$$
+
+## 2-norm revisited
+
+```{julia}
+#|echo: false
+let
+    θs = range(0, 2π, length=100)
+    A = [ 0.634286  0.418473 ; 1.93333   0.806436 ]
+    xy = [cos.(θs)' ; sin.(θs)']
+    Axy = A*xy
+    U, s, V = svd(A)
+
+    p1 = plot(xy[1,:], xy[2,:], linewidth=4, linecolor=:black, legend=false,
+              aspect_ratio=:equal)
+    plot!([0; V[1,1]], [0; V[2,1]], linewidth=4, linecolor=:black)
+    plot!([0; V[1,2]], [0; V[2,2]], linewidth=4, linecolor=:black,
+          linestyle=:dash)
+    p2 = plot(Axy[1,:], Axy[2,:], linewidth=4, linecolor=:blue, legend=false,
+               aspect_ratio=:equal)
+    plot!([0; s[1]*U[1,1]], [0; s[1]*U[2,1]], linewidth=4, linecolor=:blue)
+    plot!([0; s[2]*U[1,2]], [0; s[2]*U[2,2]], linewidth=4, linecolor=:blue,
+          linestyle=:dash)
+    plot(p1, p2, layout=@layout([a b]))
+end
+```
+
+## 2-norm revisited
+
+From definition
+$$
+  \|A\|_2^2 = \max_{\|v\|_2^2=1} \|Av\|_2^2
+$$
+Lagrangian for optimization
+$$
+  L(x, \lambda) = \frac{1}{2} \|Av\|_2^2 - \frac{\lambda}{2} (\|v\|^2-1)
+$$
+Q: What's the derivative of $L$?
+
+## 2-norm revisited
+
+Stationary points satisfy (for any $\delta x$ and $\delta \lambda$)
+$$
+  \delta L = 
+  \delta v^T (A^* A v - \lambda v) - 
+  \frac{\delta \lambda}{2} (\|v\|^2 - 1) = 0
+$$
+So maximum (or minimum, etc) at an eigenvector of
+$$
+  A^* A = (V \Sigma U^*) (U \Sigma V^*) = V \Sigma^2 V^*
+$$
+Note that $A v_i = u_i \sigma_i$, so we can get everything.
+
+# Norms and Neumann series
+
+## Norms and Neumann series
+
+Suppose $F \in L(\calV, \calV)$ and $\|F\| < 1$.  Then define
+$$
+  G_n = \sum_{j=0}^n F^j.
+$$
+Note that
+$$
+  (I-F) G_n = I-F^{n+1}
+$$
+and $\|F^{n+1}\| \leq \|F\|^{n+1}$ for consistent norms.
+
+## Norms and Neumann series
+
+Triangle inequailty and consistency:
+$$
+  \|G_n\| \leq \sum_{j=0}^n \|F\|^j = \frac{1-\|F\|^{n+1}}{1-\|F\|}.
+$$
+Note that for $m > n$,
+$$
+  \|G_n-G_m\| 
+  \leq \|F\|^n \frac{1-\|F\|^{(m-n)+1}}{1-\|F\|} 
+  < \frac{\|F\|^n}{1-\|F\|}.
+$$
+Cauchy sequence, so converges!
+
+## Norms and Neumann series
+
+For $\|F\| < 1$, have the convergent *Neumann series*
+$$
+  (I-F)^{-1} = \sum_{j=0}^\infty F^j.
+$$
+Consistency and triangle inequality give
+$$
+  \|(I-F)^{-1}\| \leq \sum_{j=0}^\infty \|F\|^j = (1-\|F\|)^{-1}.
+$$
+This is a *Neumann series bound*.
+
+## Neumann bound
+
+Consider invertible $A$ and $\|A^{-1} E\| < 1$:
+$$
+  \|(A+E)^{-1}\| 
+  = \|(I+A^{-1} E)^{-1} A^{-1}\|
+  \leq \frac{\|A^{-1}\|}{1-\|A^{-1} E\|}.
+$$
+
+# Notions of error
+
+## Absolute error
+
+$$e_{\mbox{abs}} = |\hat{x}-x|$$
+
+- Same units as $x$
+- Can be misleading without context!
+
+## Relative error
+
+$$e_{\mbox{rel}} = \frac{|\hat{x}-x|}{|x|}$$
+
+- Dimensionless
+- Familiar ("3 percent error")
+- Can be a problem when $x = 0$ (or "close")
+
+## Mixed error
+
+$$e_{\mbox{mix}} = \frac{|\hat{x}-x|}{|x| + \tau}$$
+
+- Makes sense even at $x = 0$
+- Requires a scale parameter $\tau$
+
+## Beyond scalars
+
+Can do all the above with norms
+$$\begin{aligned}
+e_{\mbox{abs}} &= \|\hat{x}-x\| \\
+e_{\mbox{rel}} &= \frac{\|\hat{x}-x\|}{\|x\|} \\
+e_{\mbox{mix}} &= \frac{\|\hat{x}-x\|}{\|x\| + \tau}
+\end{aligned}$$
+
+- Can also give componentwise absolute or relative errors.
+- Dimensions deserve care!
+
+## Forward and backward error
+
+Consider $y = f(x)$.  Forward error for $\hat{y}$:
+$$
+  \hat{y}-y
+$$
+Can also consider *backward error* $\hat{x}-x$:
+$$
+  \hat{y} = f(\hat{x})
+$$
+Treat error as a perturbation to *input* rather than *output*.
+
+## Condition number
+
+First-order bound on relation between relative changes in input and
+output:
+$$
+  \frac{\|\hat{y}-y\|}{\|y\|} \lesssim 
+  \kappa_f(x) \frac{\|\hat{x}-x\|}{\|x\|}.
+$$
+How to get (tight) constant $\kappa_f(x)$?
+
+## Perturbing matrix problems
+
+Consider $\hat{y} = (A+E)x$ vs $y = Ax$ ($A$ invertible).
+$$
+  \frac{\|\hat{y}-y\|}{\|y\|} = \frac{\|Ex\|}{\|y\|} 
+  \leq \kappa(A) \frac{\|E\|}{\|A\|}.
+$$
+What should $\kappa(A)$ be?  Write $x = A^{-1} y$; then
+$$
+  \frac{\|Ex\|}{\|y\|}
+  = \frac{\|EA^{-1} y\|}{\|y\|} 
+  \leq \|EA^{-1}\| \leq \|E\| \|A^{-1}\|.
+$$
+So $\kappa(A) = \|A\| \|A^{-1}\|$.
+
+## Relative condition number
+
+When $\|~|A|~\| \leq \|A\|$ (true for all our favorites) and 
+$|E| < \epsilon |A|$ (elementwise):
+$$
+  \frac{\|Ex\|}{\|y\|}
+  = \frac{\|EA^{-1} y\|}{\|y\|} 
+  \leq \|~|A|~|A^{-1}|~\| \epsilon
+$$
+$\|~|A|~|A^{-1}|~\|$ is the *relative* condition number.
+
+## Perturbing matrix problems
+
+Q: What about $\hat{y} = A \hat{x}$?  Same $\kappa(A)$...
