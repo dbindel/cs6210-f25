@@ -111,7 +111,7 @@ $$
 $$
 for some $s_j \in S$ and $\alpha_j \in \mathbb{F}$.
 
-Example: $\calP_2 = \span\{1, x, -x, x^2\}$.
+Example: $\calP_2 = \sspan\{1, x, -x, x^2\}$.
 
 ## Linear independence
 

@@ -6,10 +6,16 @@
   notes: 2025-08-25.html
   hw:
     - info: HW 1 (due 9/8)
+  ulinks:
+    - info: slides
+      url: lec/2025-08-25-slides.html
 -
   date: 2025-08-27
   info: Matrix calculus, sensitivity, conditioning
   notes: 2025-08-27.html
+  ulinks:
+    - info: slides
+      url: lec/2025-08-27-slides.html
 #
 # ==================
 # Week 2

@@ -80,7 +80,7 @@ Suppose $A = D + uv^T$ where $D = \operatorname{diag}(d)$ for $d, u, v \in \math
 # Reference computations
 function p4ref(d, u, v, x)
 	D = Diagonal(d)
-	A = I + u*v'
+	A = D + u*v'
 	y1 = A*x      # Part 1
 	y2 = A'*x     # Part 2
 	d = diag(A)   # Part 3
@@ -92,7 +92,7 @@ end
 # Your computations (rewrite this)
 function p4mine(d, u, v, x)
 	D = Diagonal(d)
-	A = I + u*v'
+	A = D + u*v'
 	y1 = A*x      # Part 1
 	y2 = A'*x     # Part 2
 	d = diag(A)   # Part 3
