@@ -395,6 +395,7 @@ Q: Why is this a useful idea?
 
 ## Blocking and cache
 
+::: {.incremental}
 - For *spatial locality*, want unit stride access
 - For *temporal locality*, want lots of re-use
   - Requires re-use in computation and good access pattern!
@@ -404,6 +405,7 @@ Q: Why is this a useful idea?
   - Memory transfers to multiply blocks: $O(b^2)$
   - Arithmetic costs to multiply blocks: $O(b^3)$
 - Block recursively for better use at multiple cache levels
+:::
 
 ## Blocking and linear algebra
 
@@ -444,6 +446,8 @@ How LAPACK does it:
 
 Invariant under appropriate change of basis:
 
+::: {.incremental}
+
 - $A \in \bbR^{n \times n}$ is *nonsingular* if $A^{-1}$ exists;
   otherwise *singular*.
 
@@ -456,6 +460,8 @@ Invariant under appropriate change of basis:
 - $L \in \bbR^{n \times m}$ is *low rank* if $L = UV^T$ for
   $U \in \bbR^{n \times k}$ and $V \in \bbR^{m \times k}$ where
   $k \ll \min(m,n)$.
+
+:::
 
 Reflect fundamental properties of maps, operators, forms.
 
@@ -682,6 +688,7 @@ Consider $(Pv)_i = v_{\pi(i)}$:
 
 ## General sparse matrix formats
 
+::: {.incremental}
 - General sparse formats: store nonzero locations explicitly
 - Coordinate form: $(i, j, a_{ij})$ tuples (usu in parallel arrays)
   - Entries $(i, j, a_{ij})$ and $(i, j, a_{ij}')$ implicitly summed
@@ -690,6 +697,7 @@ Consider $(Pv)_i = v_{\pi(i)}$:
 - Main representation: Compressed Sparse Column (CSC)
   - Fast (vs COO) for matrix-vector products
   - Slow for adding new nonzeros
+:::
 
 ## General sparse matrix formats (COO)
 

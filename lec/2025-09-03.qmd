@@ -468,23 +468,24 @@ matrices) are *tridiagonal* matrices in which $k_1 = k_2 = 1$.
 
 In the conventional storage layout for band matrices (used by LAPACK)
 the nonzero entries for a band matrix $A$ are stored in a packed storage
-matrix $B$ such that each column of $B$ corresponds to a column of $A$
-and each row of $B$ corresponds to a nonzero (off-)diagonal of $A$. For
+matrix $B$ such that each column of $B$ corresponds to a diagonal of $A$
+and each row of $B$ corresponds to a column of $A$. For
 example,
 $$
-  \begin{bmatrix}
-    a_{11} & a_{12} \\
-    a_{21} & a_{22} & a_{23} \\
-    a_{31} & a_{32} & a_{33} & a_{34} \\
-    & a_{42} & a_{43} & a_{44} & a_{45} \\
-    & & a_{53} & a_{54} & a_{55}
-  \end{bmatrix} \mapsto
-  \begin{bmatrix}
-    * & a_{12} & a_{23} & a_{34} & a_{45} \\
-    a_{11} & a_{22} & a_{33} & a_{44} & a_{55} \\
-    a_{21} & a_{32} & a_{43} & a_{54} & * \\
-    a_{31} & a_{42} & a_{53} & * & *
-  \end{bmatrix}
+\begin{bmatrix}
+a_{11} & \color{green}{a_{12}} & \color{blue}{a_{13}} &        &        \\
+\color{red}{a_{21}} & a_{22} & \color{green}{a_{23}} & \color{blue}{a_{24}} &        \\
+       & \color{red}{a_{32}} & a_{33} & \color{green}{a_{34}} & \color{blue}{a_{35}} \\
+       &        & \color{red}{a_{43}} & a_{44} & \color{green}{a_{45}} \\
+       &        &        & \color{red}{a_{54}} & a_{55}
+\end{bmatrix} \rightarrow
+\begin{bmatrix}
+\color{red}{a_{21}} & a_{11} &   &   \\
+\color{red}{a_{32}} & a_{22} & \color{green}{a_{12}} &   \\
+\color{red}{a_{43}} & a_{33} & \color{green}{a_{23}} & \color{blue}{a_{35}} \\
+\color{red}{a_{52}} & a_{44} & \color{green}{a_{34}} & \color{blue}{a_{45}} \\
+       & a_{55} & \color{green}{a_{45}} & \color{blue}{a_{55}}
+\end{bmatrix}
 $$
 Julia does not provide easy specialized support for
 band matrices (though it is possible to access the band matrix routines
