@@ -1,0 +1,1045 @@
+---
+title: "CS 6210: Matrix Computations"
+subtitle: Matrix representations and operations
+author: David Bindel
+date: 2025-09-03
+format:
+  revealjs:
+    embed-resources: true
+    code-annotations: below
+    html-math-method: mathjax
+    mermaid-format: svg
+---
+
+# Matrix algebra and linear algebra
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+```{julia}
+#|echo: false
+#|output: false
+using Plots
+using LinearAlgebra
+using SparseArrays
+```
+
+## Linear algebra
+
+Focus on:
+
+- Abstract vector spaces
+- Mappings on/between those spaces
+- Invariant properties
+
+## Matrix computations
+
+Add concern with:
+
+- Matrix shapes
+- Graph of a matrix
+- Efficient representations
+
+... all of which are basis-dependent!
+
+# Dense matrix basics
+
+## The basics
+
+Build on *Basic Linear Algebra Subroutines* (BLAS):
+
+- **Level 1**: Vector operations (e.g. $y^T x$)
+- **Level 2**: Matrix-vector operation (e.g. $Ax$)
+- **Level 3**: Matrix-matrix operations (e.g. $AB$)
+
+Arithmetic costs are $O(n^1)$, $O(n^2)$, and $O(n^3)$, respectively.
+
+## Computation and memory
+
+Worry about two costs:
+
+- Storage used
+- Time used
+  - For arithmetic...
+  - *and* for data movement
+
+Data movement time varies a *lot*, depending on
+
+- Data layout in memory
+- Access patterns in algorithms
+
+## Memory and meaning
+
+Memory (linearly addressed) contains 1D floating point array:
+
+```{mermaid}
+%%| fig-width: 5.0
+%%| fig-height: 1.0
+block-beta
+  columns 1
+  block
+    A["..."]
+    B["1.0"]
+    C["2.0"]
+    D["3.0"]
+    E["4.0"]
+    F["..."]
+  end
+```
+
+Interpretation:
+
+$$
+x = \begin{bmatrix} 1 \\ 2 \\ 3 \\ 4 \end{bmatrix} \mbox{ or }
+A = \begin{bmatrix} 1 & 3 \\ 2 & 4 \end{bmatrix} \mbox{ or ...}
+$$
+
+## Column major and row major
+
+```{mermaid}
+%%| fig-width: 5.0
+%%| fig-height: 1.0
+block-beta
+  columns 1
+  block
+    A["..."]
+    B["1.0"]
+    C["2.0"]
+    D["3.0"]
+    E["4.0"]
+    F["..."]
+  end
+```
+
+::: {.columns}
+
+::: {.column width="45%"}
+#### Column major
+$$
+A = \begin{bmatrix} 1 & 3 \\ 2 & 4 \end{bmatrix}
+$$
+($a_{ij}$ at `data[i+j*m]`)
+
+Fortran, MATLAB, Julia, R, NumPy / SciPy,
+Eigen and Arbmadillo (C++)
+:::
+
+::: {.column width="8%"}
+:::
+
+::: {.column width="45%"}
+#### Row major
+$$
+A = \begin{bmatrix} 1 & 2 \\ 3 & 4 \end{bmatrix}
+$$
+
+($a_{ij}$ at `data[j+i*n]`)
+
+C and C++ (built in), Pascal
+:::
+
+:::
+
+## Column major in practice
+
+```{julia}
+#| echo: true
+let
+    A = [1.0 3.0;
+         2.0 4.0]
+    A[:]  # View multidimensional array mem as vector
+end
+```
+
+## So what?
+
+Why do you need to know this?
+
+## Consider matvecs
+
+Can be *row-oriented* (`ij`) or *column-oriented* (`ji`)
+
+```{julia}
+#| echo: false
+#| output: asis
+
+function print_color_vec(s, colors)
+    f = "\\begin{bmatrix}\n"
+    m = length(colors)
+    for i = 1:m
+        f = f * "\\color{$(colors[i])}{$(s)_{$(i)}} "
+        if i != m
+            f = f * "\\\\\n"
+        end
+    end
+    f = f * "\\end{bmatrix}\n"
+    f
+end
+
+function print_color_mat(s, colors)
+    f = "\\begin{bmatrix}\n"
+    m, n = size(colors)
+    for i = 1:m
+        f = f * "\\color{$(colors[i,1])}{$(s)_{$(i)1}} "
+        for j = 2:n
+            f = f * " & \\color{$(colors[i,j])}{$(s)_{$(i)$(j)}}"
+        end
+        if i != m
+            f = f * "\\\\\n"
+        end
+    end
+    f = f * "\\end{bmatrix}\n"
+    f
+end
+
+let
+    x = "black"
+    b = "blue"
+    r = "red"
+    p = "purple"
+    g = "lightgray"
+    
+    print("\$\$")
+    print(print_color_vec("y", [p; g; g]) * " = ")
+    print(print_color_mat("a", [b b b; g g g; g g g]))
+    print(print_color_vec("x", [r; r; r]))
+    print("\$\$")
+
+    print("\$\$")
+    print(print_color_vec("y", [p; p; p]) * " = ")
+    print(print_color_mat("a", [b g g; b g g; b g g]))
+    print(print_color_vec("x", [r; g; g]))
+    print("\$\$")
+end
+```
+
+
+## Which is faster?
+
+::: {.columns}
+
+::: {.column}
+```{.julia}
+function matvec1_row(A, x)
+  m, n = size(A)
+  y = zeros(m)
+  for i = 1:m
+    for j = 1:n
+      y[i] += A[i,j]*x[j]
+    end
+  end
+  y
+end
+```
+:::
+
+::: {.column}
+```{.julia}
+function matvec1_col(A, x)
+  m, n = size(A)
+  y = zeros(m)
+  for j = 1:n
+    for i = 1:m
+      y[i] += A[i,j]*x[j]
+    end
+  end
+  y
+end
+```
+:::
+
+:::
+
+::: {.incremental}
+- Consider $m = n = 4000$ on my laptop (M1 Macbook Pro)
+- `matvec1_row` takes about 118 ms
+- `matvec1_col` takes about 14 ms
+- `A*x` takes about 3 ms
+:::
+
+## Why is it faster?
+
+*Cache locality* takes advantage of *locality of reference*
+
+::: {.incremental}
+- *Temporal locality*: Access the same items close in time
+- *Spatial locality*: Access data in close proximity together
+- Cache hierarchy: small/fast to big/slow
+- Get a *line* at a time (say 64 bytes) -- spatial locality
+- Try to keep recently-used data -- temporal locality
+:::
+
+## Cache on my laptop
+
+Numbers from one core on my laptop:
+
+::: {.incremental}
+- Registers (on chip): use immediately
+- L1 cache (128 KB): 3-4 cycles latency
+- L2 cache (12 MB, shared): 18 cycles latency
+- L3 cache (8 MB, shared): 18 cycle latency
+- M1 uses 128-byte cache lines (64 more common)
+- Main memory: worst case about 350 cycles
+- Note: Can launch several vector ops per cycle!
+:::
+
+## Explanation
+
+::: {.incremental}
+- At 4000-by-4000 8-byte floats, `A` takes about 120 MB
+  - $10\times$ the biggest cache!
+  - So we are mostly going to main memory
+- `matvec1_col` accesses `A` with *unit stride*
+  - This is great for spatial locality!
+  - One cache line is 16 doubles
+  - So about an order of magnitude fewer cache misses
+  - And arithmetic is negligible compared to data transfers
+:::
+
+## Matrix-matrix products
+
+$$c_{ij} = \sum_k a_{ik} b_{kj}$$
+
+- Not two, but *six* possible orderings of $i, j, k$
+- These provide some useful perspectives...
+
+## Matrix-matrix: inner products
+
+`ij(k)` or `ji(k)`: Each entry of $C$ is a dot product of a row of $A$
+and a column of $B$.
+
+```{julia}
+#| echo: false
+#| output: asis
+let
+    x, b, r, p, g = "black", "blue", "red", "purple", "lightgray"    
+    print("\$\$")
+    print(print_color_mat("c", [p g g; g g g; g g g]) * " = ")
+    print(print_color_mat("a", [b b b; g g g; g g g]))
+    print(print_color_mat("b", [r g g; r g g; r g g]))
+    print("\$\$")
+end
+```
+
+## Matrix-matrix: outer products
+
+`k(ij)` or `k(ji)`: $C$ is a sum of outer products of column $k$ of
+$A$ and row $k$ of $B$.
+
+```{julia}
+#| echo: false
+#| output: asis
+let
+    x, b, r, p, g = "black", "blue", "red", "purple", "lightgray"    
+    print("\$\$")
+    print(print_color_mat("c", [p p p; p p p; p p p]) * " = ")
+    print(print_color_mat("a", [b g g; b g g; b g g]))
+    print(print_color_mat("b", [r r r; g g g; g g g]))
+    print("\$\$")
+end
+```
+
+## Matrix-matrix: row matvecs
+
+`i(jk)` or `i(kj)`: Each row of $C$ is a row of $A$ multiplied by $B$
+
+```{julia}
+#| echo: false
+#| output: asis
+let
+    x, b, r, p, g = "black", "blue", "red", "purple", "lightgray"    
+    print("\$\$")
+    print(print_color_mat("c", [p p p; g g g; g g g]) * " = ")
+    print(print_color_mat("a", [b b b; g g g; g g g]))
+    print(print_color_mat("b", [r r r; r r r; r r r]))
+    print("\$\$")
+end
+```
+
+## Matrix-matrix: col matvecs
+
+`j(ik)` or `j(ki)`: Each column of $C$ is $A$ times a column of $B$
+
+```{julia}
+#| echo: false
+#| output: asis
+let
+    x, b, r, p, g = "black", "blue", "red", "purple", "lightgray"    
+    print("\$\$")
+    print(print_color_mat("c", [p g g; p g g; p g g]) * " = ")
+    print(print_color_mat("a", [b b b; b b b; b b b]))
+    print(print_color_mat("b", [r g g; r g g; r g g]))
+    print("\$\$")
+end
+```
+
+## Matrix-matrix: blocking
+
+- Can do *any* traversal over $(i,j,k)$ index space
+- So organize around blocks: $C_{ij} = \sum_k A_{ij} B_{jk}$
+
+```{julia}
+#| echo: false
+#| output: asis
+let
+    x, b, r, p, g = "black", "blue", "red", "purple", "gray"
+    print("\$\$")
+    print(print_color_mat("C", [p b; r g]) * " = ")
+    print(print_color_mat("c", [p p b b; p p b b; r r g g; r r g g]))
+    print("\$\$")
+end
+```
+
+Q: Why is this a useful idea?
+
+## Blocking and cache
+
+- For *spatial locality*, want unit stride access
+- For *temporal locality*, want lots of re-use
+  - Requires re-use in computation and good access pattern!
+  - Measure re-use via *arithmetic intensity*: flops/memory ops
+- Idea: use small blocks that fit in cache
+  - Simple model: $b$-by-$b$ blocks, explicit cache control
+  - Memory transfers to multiply blocks: $O(b^2)$
+  - Arithmetic costs to multiply blocks: $O(b^3)$
+- Block recursively for better use at multiple cache levels
+
+## Blocking and linear algebra
+
+For $\mathcal{A} \in L(\calV_1 \oplus \calV_2, \calW_1 \oplus \calW_2)$:
+$$
+  w = \mathcal{A} v \equiv
+  \begin{bmatrix} w_1 \\ w_2 \end{bmatrix} =
+  \begin{bmatrix}
+  \mathcal{A}_{11} & \mathcal{A}_{12} \\ 
+  \mathcal{A}_{21} & \mathcal{A}_{22}
+  \end{bmatrix}
+  \begin{bmatrix} v_1 \\ v_2 \end{bmatrix}
+$$
+where
+$$
+  v_i = \Pi_{\calV_i} v, \quad
+  w_j = \Pi_{\calW_j} w, \quad
+  \mathcal{A}_{ij} = \Pi_{\calW_i} \mathcal{A} |_{\calV_j}
+$$
+Given bases $V_1$, $V_2$, and 
+$V = \begin{bmatrix} V_1 & V_2 \end{bmatrix}$
+for $\calV_1$, $\calV_2$ and $\calV = \calV_1 \oplus \calV_2$
+(and similarly for $\calW$), get matrix representation with same
+block structure as above.
+
+## Performance the lazy way
+
+How LAPACK does it:
+
+- Organize around block matrices (subspace sums)
+- Do as much as possible with level 3 BLAS calls
+  - Matrix-matrix multiply, rank $k$ update, etc
+- Use *someone else's* well-tuned BLAS library
+
+# Matrix shapes and structures
+
+## Linear algebra structures
+
+Invariant under appropriate change of basis:
+
+- $A \in \bbR^{n \times n}$ is *nonsingular* if $A^{-1}$ exists;
+  otherwise *singular*.
+
+- $Q \in \bbR^{n \times n}$ is *orthogonal* if $Q^T Q = I$.
+
+- $A \in \bbR^{n \times n}$ is *symmetric* if $A = A^T$.
+
+- $S \in \bbR^{n \times n}$ is *skew-symmetric* if $S = -S^T$.
+
+- $L \in \bbR^{n \times m}$ is *low rank* if $L = UV^T$ for
+  $U \in \bbR^{n \times k}$ and $V \in \bbR^{m \times k}$ where
+  $k \ll \min(m,n)$.
+
+Reflect fundamental properties of maps, operators, forms.
+
+## Matrix structures
+
+- *Shape* (nonzero structure) depends on basis.
+- These are not linear algebraic structures!
+- But they are very useful in matrix computations...
+
+## Matrix structures
+
+$D$ is *diagonal* if $d_{ij} = 0$ for $i \neq j$.
+
+$$\begin{bmatrix}
+  d_1 & \color{lightgray}{0} & \color{lightgray}{0} & \color{lightgray}{0} \\
+  \color{lightgray}{0} & d_2 & \color{lightgray}{0} & \color{lightgray}{0} \\
+  \color{lightgray}{0} & \color{lightgray}{0} & d_3 & \color{lightgray}{0} \\
+  \color{lightgray}{0} & \color{lightgray}{0} & \color{lightgray}{0} & d_4
+\end{bmatrix} \rightarrow
+\begin{bmatrix}
+  \times & & & \\
+  & \times & & \\
+  & & \times & \\
+  & & & \times
+\end{bmatrix}
+$$
+
+Diagramming convention ("spy plots"):
+
+- $\times$ (or something) for *structural* nonzeros
+- Blank space for zeros (or a zero symbol)
+
+## Matrix structures
+
+$T$ is *tridiagonal* if $t_{ij} = 0$ for $i \not \in \{j-1, j, j+1\}$.
+
+```{julia}
+#| echo: false
+#| output: asis
+
+function print_mini_spy(A; nzmark="\\times")
+    m, n = size(A)
+    println("\\begin{bmatrix}")
+    s(i,j) = A[i,j] == 0 ? " " : nzmark
+    for i = 1:m
+        print(s(i,1))
+        for j = 2:n
+            print(" & $(s(i,j))")
+        end
+        println(" \\\\")
+    end
+    println("\\end{bmatrix}")
+end
+
+println("\$\$")
+print_mini_spy([1 1 0 0 0;
+                1 1 1 0 0;
+                0 1 1 1 0;
+                0 0 1 1 1;
+                0 0 0 1 1])
+println("\$\$")
+```
+
+## Matrix structures
+
+$U$ is *upper bidiagonal* if only main diagonal and first
+superdiagonal are nonzero (similar with lower bidiagonal).
+
+```{julia}
+#| echo: false
+#| output: asis
+println("\$\$")
+print_mini_spy([1 1 0 0 0;
+                0 1 1 0 0;
+                0 0 1 1 0;
+                0 0 0 1 1;
+                0 0 0 0 1])
+println("\$\$")
+```
+
+## Matrix structures
+
+$U$ is *upper triangular* if $u_{ij} = 0$ for $i > j$ and *strictly
+upper triangular* if $u_{ij} = 0$ for $i \geq j$ (lower triangular and
+strictly lower triangular are similarly defined).
+
+```{julia}
+#| echo: false
+#| output: asis
+println("\$\$")
+print_mini_spy([1 1 1 1 1;
+                0 1 1 1 1;
+                0 0 1 1 1;
+                0 0 0 1 1;
+                0 0 0 0 1])
+println(", ")
+print_mini_spy([0 1 1 1 1;
+                0 0 1 1 1;
+                0 0 0 1 1;
+                0 0 0 0 1;
+                0 0 0 0 0])
+println("\$\$")
+```
+
+## Matrix structures
+
+$H$ is *upper Hessenberg* if $h_{ij} = 0$ for $i > j+1$.
+
+```{julia}
+#| echo: false
+#| output: asis
+println("\$\$")
+print_mini_spy([1 1 1 1 1;
+                1 1 1 1 1;
+                0 1 1 1 1;
+                0 0 1 1 1;
+                0 0 0 1 1])
+println("\$\$")
+```
+
+## Matrix structures
+
+$B$ is *banded* if $b_{ij} = 0$ for $-b_l \leq j-i \leq b_{u}$.
+
+```{julia}
+#| echo: false
+#| output: asis
+println("\$\$")
+print_mini_spy([1 1 1 0 0;
+                1 1 1 1 0;
+                0 1 1 1 1;
+                0 0 1 1 1;
+                0 0 0 1 1])
+println("\$\$")
+```
+
+# Sparse formats
+
+## Sparse formats
+
+- Matrix is *sparse* if most entries are zero
+- Diagonal, tridiagonal, band matrices are examples
+- $\nnz(A)$ is number of nonzeros in $A$
+- Cost of storage, multiply is $O(\nnz(A))$
+
+## Diagonal storage
+
+```{julia}
+Diagonal([1.0; 2.0; 3.0; 4.0])
+```
+
+- Only explicitly store diagonal entries
+- Equivalent: `Diagonal(d) * x` and `d .* x`
+
+## Tridiagonal storage
+
+```{julia}
+SymTridiagonal([1.0; 2.0; 3.0; 4.0], [5.0; 6.0; 7.0])
+```
+
+- Have `Tridiagonal` and `SymTridiagonal` variants
+- Only explicitly store diagonal and first super/sub diagonal
+
+Q: How would we write `T*x` via diagonal/superdiagonal?
+
+## Tridiagonal storage
+
+```{julia}
+#| echo: true
+let
+    d, du = [1.0; 2.0; 3.0; 4.0], [5.0; 6.0; 7.0]
+    T = SymTridiagonal(d, du)
+    x = [9.0; 10.0; 11.0; 12.0]
+
+    # Use Julia built-in for tridiagonal
+    y1 = T*x
+
+    # Implement multiply directly with d, du
+    y2 = d .* x                       # Diagonal
+    y2[2:end]   .+= du .* x[1:end-1]  # Subdiagonal
+    y2[1:end-1] .+= du .* x[2:end]    # Superdiagonal
+    
+    # Check equivalence
+    y1 == y2
+end
+```
+
+## Band storage
+
+Store $a_{ij}$ at `B[j,j-i+bl+1` (index by col, diagonal)
+$$
+\begin{bmatrix}
+a_{11} & \color{green}{a_{12}} & \color{blue}{a_{13}} &        &        \\
+\color{red}{a_{21}} & a_{22} & \color{green}{a_{23}} & \color{blue}{a_{24}} &        \\
+       & \color{red}{a_{32}} & a_{33} & \color{green}{a_{34}} & \color{blue}{a_{35}} \\
+       &        & \color{red}{a_{43}} & a_{44} & \color{green}{a_{45}} \\
+       &        &        & \color{red}{a_{54}} & a_{55}
+\end{bmatrix} \rightarrow
+\begin{bmatrix}
+\color{red}{a_{21}} & a_{11} &   &   \\
+\color{red}{a_{32}} & a_{22} & \color{green}{a_{12}} &   \\
+\color{red}{a_{43}} & a_{33} & \color{green}{a_{23}} & \color{blue}{a_{35}} \\
+\color{red}{a_{52}} & a_{44} & \color{green}{a_{34}} & \color{blue}{a_{45}} \\
+       & a_{55} & \color{green}{a_{45}} & \color{blue}{a_{55}}
+\end{bmatrix}
+$$
+
+- No band matrix type built into Julia base `LinearAlgebra`
+- But there is a package! (and can call LAPACK directly)
+
+## Permutations
+
+Consider $(Pv)_i = v_{\pi(i)}$:
+
+- $P$ a sparse matrix with $p_{ij} = \delta_{\pi(i),j}$
+- Can store as integer vector 
+  $\begin{bmatrix} \pi(1) & \ldots & \pi(n) \end{bmatrix}^T$:
+  ```{.julia}
+  Pv = v[pi]
+  v[pi] = Pv
+  ```
+- Not the only compact representation!
+  - Ex: LAPACK partial pivot uses product of transpositions
+
+## General sparse matrix formats
+
+- General sparse formats: store nonzero locations explicitly
+- Coordinate form: $(i, j, a_{ij})$ tuples (usu in parallel arrays)
+  - Entries $(i, j, a_{ij})$ and $(i, j, a_{ij}')$ implicitly summed
+  - Fast for adding new nonzeros
+  - Slow for matrix-vector products
+- Main representation: Compressed Sparse Column (CSC)
+  - Fast (vs COO) for matrix-vector products
+  - Slow for adding new nonzeros
+
+## General sparse matrix formats (COO)
+
+$$
+\begin{bmatrix}
+a_{11} &        &        &  a_{14} \\
+       & a_{22} &        &  a_{24} \\
+       &        & a_{33} &  a_{34} \\
+a_{41} & a_{42} & a_{43} &  a_{44}
+\end{bmatrix}
+$$
+
+```{mermaid}
+%%| fig-width: 10.0
+%%| fig-height: 3.0
+block-beta
+  columns 1
+  block
+    ti("i")
+    i1["1"]
+    i2["4"]
+    i3["2"]
+    i4["4"]
+    i5["3"]
+    i6["4"]
+    i7["1"]
+    i8["2"]
+    i9["3"]
+    ia["4"]
+  end
+  block
+    tj("j")
+    j1["1"]
+    j2["1"]
+    j3["2"]
+    j4["2"]
+    j5["3"]
+    j6["3"]
+    j7["4"]
+    j8["4"]
+    j9["4"]
+    ja["4"]
+  end
+  block
+    tdata("data")
+    a1["a11"]
+    a2["a41"]
+    a3["a22"]
+    a4["a42"]
+    a5["a32"]
+    a6["a43"]
+    a7["a41"]
+    a8["a42"]
+    a9["a43"]
+    aa["a44"]
+  end
+  class ti BT
+  class tj BT
+  class tdata BT
+  classDef BT stroke:transparent,fill:transparent
+```
+
+## General sparse matrix formats (CSC)
+
+$$
+\begin{bmatrix}
+a_{11} &        &        &  a_{14} \\
+       & a_{22} &        &  a_{24} \\
+       &        & a_{33} &  a_{34} \\
+a_{41} & a_{42} & a_{43} &  a_{44}
+\end{bmatrix}
+$$
+
+```{mermaid}
+%%| fig-width: 10.0
+%%| fig-height: 3.0
+block-beta
+  columns 1
+  block
+    tp("colptr")
+    p1["1"]
+    p2["3"]
+    p3["5"]
+    p4["7"]
+    p5["11"]
+  end
+  space
+  block
+    ti("rowval")
+    i1["1"]
+    i2["4"]
+    i3["2"]
+    i4["4"]
+    i5["3"]
+    i6["4"]
+    i7["1"]
+    i8["2"]
+    i9["3"]
+    ia["4"]
+    ib[" "]
+  end
+  block
+    tdata("nzval")
+    a1["a11"]
+    a2["a41"]
+    a3["a22"]
+    a4["a42"]
+    a5["a32"]
+    a6["a43"]
+    a7["a41"]
+    a8["a42"]
+    a9["a43"]
+    aa["a44"]
+    space
+  end
+  p1 --> i1
+  p2 --> i3
+  p3 --> i5
+  p4 --> i7
+  p5 --> ib
+  class tp BT
+  class ti BT
+  class tdata BT
+  classDef BT stroke:transparent,fill:transparent
+  style ib stroke:transparent,fill:transparent
+```
+
+## CSC construction
+
+```{julia}
+#| echo: true
+# using SparseArrays
+let
+    i = [1; 4; 2; 4; 3; 4; 1; 2; 3; 4]
+    j = [1; 1; 2; 2; 3; 3; 4; 4; 4; 4]
+    data = [1.0; 1.1; 2.0; 2.1; 3.0; 3.1; 4.0; 4.1; 4.2; 4.3]
+    A = sparse(i,j,data)
+end
+```
+
+Could then multiply with `A*x`
+
+Q: How is `A*x` implemented?
+
+## CSC multiply
+
+Column-oriented layout, so column-oriented matvec!
+
+```{julia}
+#| echo: true
+#| output: false
+function matvec(A :: SparseMatrixCSC, x :: AbstractVector)
+    colptr, rowval, nzval = A.colptr, A.rowval, A.nzval
+    m, n = size(A)
+    y = zeros(m)
+    for j = 1:n
+        lo, hi = colptr[j], colptr[j+1]-1
+        y[rowval[lo:hi]] .+= nzval[lo:hi] .* x[j]
+    end
+    y
+end
+```
+
+```{julia}
+#| echo: false
+let
+    i = [1; 4; 2; 4; 3; 4; 1; 2; 3; 4]
+    j = [1; 1; 2; 2; 3; 3; 4; 4; 4; 4]
+    data = [1.0; 1.1; 2.0; 2.1; 3.0; 3.1; 4.0; 4.1; 4.2; 4.3]
+    x = rand(4)
+    A = sparse(i,j,data)
+    if !isapprox(A*x, matvec(A, x))
+        println("Error!")
+    end
+end
+```
+
+- *Optional* type annotations (e.g. `A :: SparseMatrixCSC`)
+- Last expression in function is returned
+
+## A slightly bigger example
+
+```{julia}
+#| echo: false
+#| output: asis
+println("\$\$")
+print_mini_spy([1 1 0 1 0 0 0 0 0;
+                1 1 1 0 1 0 0 0 0;
+                0 1 1 0 0 1 0 0 0;
+                1 0 0 1 1 0 1 0 0;
+                0 1 0 1 1 1 0 1 0;
+                0 0 1 0 1 1 0 0 1;
+                0 0 0 1 0 0 1 1 0;
+                0 0 0 0 1 0 1 1 1;
+                0 0 0 0 0 1 0 1 1])
+println("\$\$")
+```
+
+## Graph of a matrix
+
+Nodes are rows/columns, edge $(i,j)$ if $a_{ij} \neq 0$.
+
+```{dot}
+graph G {
+  layout=neato
+  1 [pos="0,0!"]
+  2 [pos="1,0!"]
+  3 [pos="2,0!"]
+  4 [pos="0,1!"]
+  5 [pos="1,1!"]
+  6 [pos="2,1!"]
+  7 [pos="0,2!"]
+  8 [pos="1,2!"]
+  9 [pos="2,2!"]
+  1 -- 2 -- 3;
+  4 -- 5 -- 6;
+  7 -- 8 -- 9;
+  1 -- 4 -- 7;
+  2 -- 5 -- 8;
+  3 -- 6 -- 9;
+}
+```
+
+# Data-sparse matrices
+
+## What is data sparsity?
+
+- $A$ is *sparse*: $\nnz(A) \ll mn$
+- $A$ is *data sparse*: Represent with $\ll mn$ parameters
+  - Ordinary sparsity is a special case
+  - More generally involves formulas for elements
+- Data sparse representations often allow fast matvecs
+
+## Low-rank
+
+If $A \in \bbR^{m \times n}$ has rank $k$, can write as
+$$
+  A = UV^T, \quad U \in \bbR^{m \times k}, V \in \bbR^{n \times k}.
+$$
+Fast matvecs using associativity:
+```{.julia}
+y = (U*V')*x   # O(mn) storage, O(mnk) flops
+y = U*(V'*x)   # O((m+n) k) storage and flops
+```
+
+## Toeplitz
+
+$$
+A = \begin{bmatrix}
+a_0    & a_1    & a_2 & a_3 \\
+a_{-1} & a_0    & a_1 & a_2 \\
+a_{-2} & a_{-1} & a_0 & a_1 \\
+a_{-3} & a_{-2} & a_{-1} & a_0
+\end{bmatrix}
+$$
+
+- Toeplitz matrices have constant diagonals
+- Related: Hankel matrices (constant anti diagonals)
+
+## Circulant
+
+$$
+C =
+\begin{bmatrix}
+  \color{red}{a_0   } & \color{red}{a_1   } & \color{red}{a_2   } & \color{red}{a_3} & a_{-3} & a_{-2} & a_{-1}\\
+  \color{red}{a_{-1}} & \color{red}{a_0   } & \color{red}{a_1   } & \color{red}{a_2} & a_{3} & a_{-3} & a_{-2}\\
+  \color{red}{a_{-2}} & \color{red}{a_{-1}} & \color{red}{a_0   } & \color{red}{a_1} & a_{2} & a_{3} & a_{-3} \\
+  \color{red}{a_{-3}} & \color{red}{a_{-2}} & \color{red}{a_{-1}} & \color{red}{a_0} & a_{1} & a_{2} & a_{3} \\
+  a_3 & a_{-3} & a_{-2} & a_{-1} & a_0 & a_1 & a_2 \\
+  a_2 & a_3 & a_{-3} & a_{-2} & a_{-1} & a_0 & a_1 \\
+  a_1 & a_2 & a_3 & a_{-3} & a_{-2} & a_{-1} & a_0 \\
+\end{bmatrix}
+$$
+
+- Can embed any Toeplitz in a *circulant* matrix
+- Fast matvec with $C$ yields fast matvec with $A$ (how?)
+
+## Circulants and permutations
+
+Write previous circulant concisely as
+$$
+  C = \sum_{k=-3}^3 a_k P^{-k},
+$$
+where $P$ is the forward cyclic permutation matrix
+$$
+P_{ij} = \begin{cases}
+  1, & i = j+1 \mod n \\
+  0, & \mbox{otherwise}
+\end{cases}
+$$
+FFT diagonalizes $P$ (and therefore $C$) -- more later in semester
+
+## Kronecker products
+
+$$
+A \kron B =
+  \begin{bmatrix}
+    a_{11} B & a_{12} B & \ldots & a_{1n} B \\
+    a_{21} B & a_{22} B & \ldots & a_{2n} B \\
+    \vdots & \vdots & & \vdots \\
+    a_{m1} B & a_{m2} B & \ldots & a_{mn} B
+  \end{bmatrix}.
+$$
+Multiplication represents vector triple product
+$$
+  (A \kron B) \vec(X) = \vec(BXA^T)
+$$
+where $\vec(X)$ represents `X[:]` (column-major flattening)
+
+## Low-rank block structure
+
+Many matrices have (nearly) low-rank *blocks*.  Ex:
+```{julia}
+#| echo: true
+let
+    T = Tridiagonal(rand(9), rand(10), rand(9))
+    B = inv(T)
+    U, s, V = svd(B[1:4,5:10])  # Superdiagonal block is rank 1
+    s
+end
+```
+
+- Low-rank block representation yields fast matvecs
+- Basis for fast multipole method (FMM)
+- Also fast PDE solvers, methods in controls, ...
+
+# Punchline
+
+## Types of structure
+
+- Linear algebraic structure (low rank, orthogonality)
+- Matrix "shapes" (nonzero pattern) as structure
+  - Equivalent to specifying a graph structure
+- Other types of "data sparse" structure
+
+## Simple representations
+
+- Full dense matrices (column major)
+  - Operations may involve lots of arithmetic
+  - But fast with tuned level 3 BLAS, blocking
+- Special sparse matrices
+  - Bidiagonal, tridiagonal, band
+  - Indexing can be done implicitly
+
+## General sparse and data sparse
+
+- General sparse matrices
+  - Assume $\nnz(A) \ll mn$
+  - Explicit structure for graph (indexing)
+- Data sparse matrices
+  - Assume $\ll mn$ parameters describe $A$
+  - Sparse matrices are a special case
+  - May give a "black box" for fast matvecs

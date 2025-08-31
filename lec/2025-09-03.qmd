@@ -566,7 +566,7 @@ The simplest and most common data-sparse matrices are *low-rank*
 matrices. If $A \in \bbR^{m \times n}$ has rank $k$, it can be written
 in outer product form as
 $$
-  A = UW^T, \quad, U \in \bbR^{m \times k}, W \in \bbR^{n \times k}.
+  A = UV^T, \quad U \in \bbR^{m \times k}, V \in \bbR^{n \times k}.
 $$
 This factored form has a storage cost of $(n+m) k$, a significant
 savings over the $mn$ cost of the dense representation in the case
