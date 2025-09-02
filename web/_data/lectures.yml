@@ -35,6 +35,10 @@
 -
   date: 2025-09-08
   info: Floating point and error analysis
+  notes: 2025-09-08.html
+  ulinks:
+    - info: slides
+      url: lec/2025-09-08-slides.html
   hw:
     - info: HW 2 (due 9/15)
 -
