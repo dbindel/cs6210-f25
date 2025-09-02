@@ -15,7 +15,7 @@ Prof: [David Bindel](http://www.cs.cornell.edu/~bindel)
 487 CIS Building  
 Phone: 607-255-5395  
 E-mail: <bindel@cornell.edu>  
-OH: TBA
+OH: W 9-10, F 10:30-12, or by appointment
 
 TA: Mai Huynh  
 E-mail: <ph463@cornell.edu>  
