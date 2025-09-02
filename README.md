@@ -6,4 +6,4 @@ source for the class web site.  Feel free to use code, TeX files, or other
 materials here; also, feel free to post pull requests if you see items that
 ought to be corrected.
 
-[cs6210]: http://www.cs.cornell.edu/courses/cs6210/2025sp/
+[cs6210]: http://www.cs.cornell.edu/courses/cs6210/2025fa/
