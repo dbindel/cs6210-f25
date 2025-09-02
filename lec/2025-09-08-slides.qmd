@@ -1,0 +1,604 @@
+---
+title: "CS 6210: Matrix Computations"
+subtitle: Floating point and error analysis basics
+author: David Bindel
+date: 2025-09-03
+format:
+  revealjs:
+    embed-resources: true
+    code-annotations: below
+    html-math-method: mathjax
+    mermaid-format: svg
+---
+
+# Error analysis concepts
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+```{julia}
+#|echo: false
+#|output: false
+using Plots
+using LinearAlgebra
+using SparseArrays
+```
+
+## Absolute error
+
+$$e_{\mbox{abs}} = |\hat{x}-x|$$
+
+- Same units as $x$
+- Can be misleading without context!
+
+## Relative error
+
+$$e_{\mbox{rel}} = \frac{|\hat{x}-x|}{|x|}$$
+
+- Dimensionless
+- Familiar ("3 percent error")
+- Can be a problem when $x = 0$ (or "close")
+
+## Mixed error
+
+$$e_{\mbox{mix}} = \frac{|\hat{x}-x|}{|x| + \tau}$$
+
+- Makes sense even at $x = 0$
+- Requires a scale parameter $\tau$
+
+## Beyond scalars
+
+Can do all the above with norms
+$$\begin{aligned}
+e_{\mbox{abs}} &= \|\hat{x}-x\| \\
+e_{\mbox{rel}} &= \frac{\|\hat{x}-x\|}{\|x\|} \\
+e_{\mbox{mix}} &= \frac{\|\hat{x}-x\|}{\|x\| + \tau}
+\end{aligned}$$
+
+- Can also give componentwise absolute or relative errors.
+- Dimensions deserve care!
+
+## Forward error
+
+![](_fig/error_fwd.svg){.nostretch fig-align="center" width="80%"}
+
+## Backward error
+
+![](_fig/error_bwd.svg){.nostretch fig-align="center" width="80%"}
+
+## Forward and backward error
+
+Consider $y = f(x)$.  Forward error for $\hat{y}$:
+$$
+  \hat{y}-y
+$$
+Can also consider *backward error* $\hat{x}-x$:
+$$
+  \hat{y} = f(\hat{x})
+$$
+Treats error as a perturbed *input* vs *output*.
+
+## First-order sensitivity
+
+Suppose $y = f(x)$ and perturbed version
+$$
+  \hat{y} = f(\hat{x}).
+$$
+First-order sensitivity from perturbation around $x$:
+$$
+  \|\hat{y}-y\| \leq \|f'(x)\| \|\hat{x}-x\| + O(\|\hat{x}-x\|^2)
+$$
+assuming $f'$ differentiable near $x$.
+
+*But* this is about *absolute* error.
+
+## Condition number
+
+First-order bound on relation between *relative changes* in input and
+output:
+$$
+  \frac{\|\hat{y}-y\|}{\|y\|} \lesssim 
+  \kappa_f(x) \frac{\|\hat{x}-x\|}{\|x\|}.
+$$
+Q: How to get (tight) constant $\kappa_f(x)$?
+
+## Condition number
+
+In general, have
+$$
+\kappa_f(x) = \frac{\|f'(x)\| \|x\|}{\|f(x)\|}
+$$
+
+Run into trouble if
+
+- $f$ is not differentiable (or not at least Lipschitz)
+- $f(x)$ is zero
+
+## Perturbing matrix problems
+
+Consider $\hat{y} = (A+E)x$ vs $y = Ax$ ($A$ invertible).
+$$
+  \frac{\|\hat{y}-y\|}{\|y\|} = \frac{\|Ex\|}{\|y\|} 
+  \leq \kappa(A) \frac{\|E\|}{\|A\|}.
+$$
+What should $\kappa(A)$ be?
+
+. . .
+
+Write $x = A^{-1} y$; then
+$$
+  \frac{\|Ex\|}{\|y\|}
+  = \frac{\|EA^{-1} y\|}{\|y\|} 
+  \leq \|EA^{-1}\| \leq \|E\| \|A^{-1}\|.
+$$
+So $\kappa(A) = \|A\| \|A^{-1}\|$.
+
+## Relative condition number
+
+When $\|~|A|~\| \leq \|A\|$ (true for all our favorites) and 
+$|E| < \epsilon |A|$ (elementwise):
+$$
+  \frac{\|Ex\|}{\|y\|}
+  = \frac{\|EA^{-1} y\|}{\|y\|} 
+  \leq \|~|A|~|A^{-1}|~\| \epsilon
+$$
+$\|~|A|~|A^{-1}|~\|$ is the *relative* condition number.
+
+## Perturbing matrix problems
+
+Q: What about $\hat{y} = A \hat{x}$?  Same $\kappa(A)$...
+
+# Floating point fundamentals
+
+## Number systems revisited
+
+Base $b$ notation for numbers:
+
+- $b$ symbols (digits) per place
+- $k$th place left of the point is $b^k$ (start $k = 0$)
+- $k$th place right of the point is $b^{-k}$
+
+Decimal and binary are base 10 and base 2, respectively.
+
+Scientific notation works in any base:
+$$
+  m \times b^e, \quad 1 \leq m < b
+$$
+
+## Scientific notation
+
+Consider example decimal fraction:
+$$
+  \frac{1}{3} = 0.\overline{3} = 3.333\ldots \times 10^{-1}
+$$
+Equivalent binary fraction:
+$$
+  \frac{(1)_2}{(11)_2} = 
+  (0.\overline{01})_2 = (1.0101\ldots)_2 \times 2^{-2}
+$$
+
+## An aside: decimal vs binary
+
+Consider $r = p/q$ with $p,q$ relatively prime
+
+- Always have a (maybe repeating) base $b$ fraction
+- Finite iff $b$ and $q$ have same prime factors
+- If repeat, must happen after $< q$ digits
+
+For $1/5$ (for example), have decimal $0.2$, but binary is
+$$
+  \frac{1_2}{(101)_2} = (0.\overline{0011})_2.
+$$
+This mismatch causes great confusion sometimes.
+
+## Binary number formats
+
+::: {.incremental}
+- Floating point: $m \times 2^e$ for variable $e$ ($1 \leq m < 2$)
+  - Mostly, with some *exceptional* representations (upcoming)
+  - The standard formats for most of scientific computing
+  - Standardized by IEEE 754 (and 854) committees
+- Fixed point: $m \times 2^e$ for fixed (implicit) $e$
+  - Common in graphics, signal processing applications
+  - Can mostly just manipulate with integer operations
+  - Range is very restricted
+- Different error models (relative vs absolute) -- to discuss
+:::
+
+## Normalized floating point numbers
+
+Our standard representations:
+$$
+(-1)^s \times (1.b_1 b_2 \ldots b_{p-1})_2 \times 2^{e-\mathrm{bias}}
+$$
+
+::: {.incremental}
+- Three parts: sign, significand (aka mantissa), and exponent
+- Get one "free" bit in significand from normalization
+- Machine epsilon (unit roundoff) is $\macheps = 2^{-p}$
+- All zeros and all ones bit patterns for exceptional values
+:::
+
+## Example
+
+Consider 32-bit number `0.2f0`:
+$$\begin{align}
+  &
+  \color{red}{0}\color{gray}{01111100}\color{blue}{10011001100110011001101} \\
+  \rightarrow
+  &
+  (-1)^{\color{red}0} 
+  \times (1.{\color{blue}{10011001100110011001101}})_2
+  \times 2^{{\color{gray}{124}}-127} \\
+=&({\color{red}+} 1) \times ({\color{blue}1.6 + \delta}) \times 2^{\color{gray}-3}
+\end{align}$$
+where $\delta$ represents the *rounding error* from having $p = 24$.
+
+## Subnormals
+
+Consider toy system with $p = 3$.  Have a gap near zero!
+
+![](_fig/subnormal0.svg){.nostretch fig-align="center" width="100%"}
+
+::: {.incremental}
+- Can't represent zero (seems like a problem...)
+- Smallest positive / negative are $x_{\pm} = \pm 2^{1-\mathrm{bias}}$
+- Next out are $y_{\pm} = \pm (1+2^{1-p}) \times 2^{1-\mathrm{bias}}$
+- $x_+ - y_+$ is closer to zero than to any normalized number!
+:::
+
+## Subnormals
+
+Consider toy system with $p = 3$.  Fill gap with *subnormals*
+ 
+ ![](_fig/subnormal1.svg){.nostretch fig-align="center" width="100%"}
+
+- Indicate with all zeros exponent field
+- Encoding interpreted as
+  $$
+    (-1)^s \times (0.b_1 b_2 \ldots b_{p-1})_2 \times 2^{-\mathrm{bias}}
+  $$
+
+## Zero
+
+Zero(s) are subnormal number(s)!
+
+::: {.incremental}
+- The number with all zero bits is `+0.0`
+- There is also `-0.0`
+- Floating point compare doesn't care: `-0.0 == 0.0`
+- *But* `1.0/0.0` and `1.0/-0.0` are different!
+:::
+
+## Infinities
+
+::: {.incremental}
+- Also want to represent $\pm \infty$ (exact or overflow)
+  - Note: Signed infinities go with signed zeros!
+- Representation:
+  - All ones in the exponent field
+  - All zeros in the significand field
+  - Sign bit interpreted as normal
+:::
+
+## Not-a-Number
+
+::: {.incremental}
+- Final class of representations is *NaN*
+- Output of $0/0$, $\sqrt{-1}$, etc
+  - May have a meaningful interpretation with more context
+- Representation
+  - All ones in the exponent field
+  - Anything nonzero in the significand field (often all ones)
+  - Sign bit is ignored
+- Arithmetic with NaN is NaN; comparison with NaN is false
+:::
+
+## Representation summary
+
+Floating point representations include:
+
+- Normalized numbers
+- Subnormal numbers
+- Infinities
+- NaNs
+
+These close the system -- every floating point operation can yield
+some floating point result.
+
+## Floating point formats
+
+Standard formats per IEEE 754:
+
+| Format | Julia name | $p$ | $e$ bits | $\macheps$                     | bias |
+|--------|------------|-----|----------|--------------------------------|------|
+| Double | `Float64`  | 53  | 11       | $\approx 1.11 \times 10^{-16}$ | 1023 |
+| Single | `Float32`  | 24  | 8        | $\approx 5.96 \times 10^{-8}$  | 127  |
+| Half   | `Float16`  | 11  | 5        | $\approx 4.88 \times 10^{-4}$  | 15   |
+
+::: {.incremental}
+- We *usually* default to double precision
+- Machine learning often uses half (or non-IEEE Bfloat16)
+- There are also quadruple formats
+:::
+
+# Operations
+
+## Rounding
+
+Write $\fl(\cdot)$ for rounding; so `0.2f0` gives $\fl(0.2)$.
+
+Rounding has different *modes* of operation:
+
+- Round to nearest even (round to nearest, on tie go to 0)
+- Round toward 0
+- Round toward $+\infty$
+- Round toward $-\infty$
+
+Default is round to nearest even (others for interval arithmetic)
+
+## Basic arithmetic
+
+For simple operations $\{ +, \times, \div, \sqrt{\cdot} \}$, return *exact
+result, correctly rounded*, e.g.
+
+- `x + y` $\mapsto \fl(x+y)$,
+- `sqrt(x)` $\mapsto \fl(\sqrt{x})$
+- and so forth
+
+Transcendental functions are hard to correctly round ("table maker's
+dilemma"), so often they allow a little more error.
+
+## Comparisons
+
+Usual greater, less, equal, except:
+
+- `-0.0 == +0.0`
+- NaN in any comparison yields false
+
+. . .
+
+Floating point numbers aren't "fuzzy."  
+(Careful) equality tests are allowed!
+
+## Exceptions
+
+*Exception* when floating point violates some expected behavior
+
+- *Inexact*: Result had to be rounded
+- *Underflow*: Result too small, had to round to subnormal
+- *Overflow*: Result too big, had to round to $\pm \infty$
+- *Divide by zero*: Produced an *exact* $\pm \infty$ (e.g. $1/0$ or $\log(0)$)
+- *Invalid*: Produced NaN
+
+## Reasoning about floating point
+
+- "Exact result, correctly rounded" is still hard to analyze!
+  - True even if results are all normalized numbers
+  - Gets trickier with exceptions beyond "inexact"
+- We want to do linear algebra, not track bits in the computer
+- Want a *model* that captures important bits of floating point
+
+# Modeling floating point
+
+## Basic observation
+
+If $\fl(x)$ is a normalized number, then
+$$
+  \fl(x) = x(1+\delta)
+$$
+for some $|\delta| \leq \macheps$.
+
+- Not true for *all* $x$ -- only normalized
+- Lose some precision by only bounding rounding error
+
+## Example
+
+```{.julia}
+# Q: Relative error in computed vs true z?
+z = 1-x*x
+```
+
+. . .
+
+$$\begin{aligned}
+  t_1 &= x^2 (1+\delta_1) & \hat{z}  &= (1-t_1)(1+\delta_2)
+\end{aligned}$$
+
+. . .
+
+$$\begin{aligned}
+  \hat{z} &= z \left( 1 - \frac{\delta_1 x^2}{1-x^2} \right)(1+\delta_2) \\
+  & \approx z \left( 1 - \frac{\delta_1 x^2}{1-x^2} +\delta_2 \right)
+\end{aligned}$$
+
+. . .
+
+Seems OK *if* $x$ is not too near $\pm 1$.
+
+## First-order (aka linearized) analysis
+
+For tiny $\delta$, use Taylor approximations to simplify:
+$$\begin{aligned}
+  (1+\delta_1)(1+\delta_2) & \approx 1+\delta_1 + \delta_2 \\
+  1/(1+\delta) & \approx 1-\delta \\
+  \log(1+\delta) &\approx \delta \\
+  \exp(\delta) &\approx 1+\delta
+\end{aligned}$$
+We usually just do this without comment.
+
+## Beyond the model
+
+Example (Sterbenz subtraction): If $2x < y < 0.5x$ then
+$$
+  \fl(x-y) = x-y
+$$
+
+. . .
+
+Why?  Exact result fits into the format!
+
+. . .
+
+*But* this says nothing about error in computed $x$ and $y$!
+
+## Shortcomings
+
+"All models are wrong, but some models are useful"
+
+- Underflow and overflow are not considered
+- Sometimes pessimistic
+
+# Finding and fixing problems
+
+## Cancellation
+
+$$\begin{aligned}
+\hat{x} &= x(1+\delta_1) \\
+\hat{y} &= y(1+\delta_2) \\
+\fl(\hat{x}-\hat{y}) &=
+  (x-y)\left(1 + \frac{\delta_1 x + \delta_2 y}{x-y} \right)
+\end{aligned}$$
+
+. . .
+
+Possible bad news --- tight bound of
+$$
+\frac{|\delta_1 x + \delta_2 y|}{|x-y|} \leq
+  \frac{|x|+|y|}{|x-y|} \macheps
+$$
+
+## Cancellation
+
+- Small errors rel to $x, y$ are *not* always small rel to $x-y$!
+- But we can often rewrite to avoid cancellation
+
+## Quadratic example
+
+Want: smaller root of $p(x) = x^2 - 2x + z$
+$$
+  r_- = 1-\sqrt{1-z}
+$$
+In code:
+```{.julia}
+r1(z) = 1-sqrt(1-z)
+```
+Questions:
+
+- What goes wrong when $z$ is near 0?
+- How do we get a more stable formula?
+
+## Quadratic example
+
+Product of roots is $r_+ r_- = z$, so can compute via $r_+$:
+$$
+  r_- = \frac{z}{r_+} = \frac{z}{1-\sqrt{1-z}}
+$$
+
+If we didn't know this, could try an expansion:
+$$
+  r_- = \frac{z}{2-z/2} + O(z^3)
+$$
+and switch formulas based on $z$.
+
+## Sensitive subproblem
+
+Consider $h = f \circ g$:
+
+- Suppose $h$ is well conditioned
+- That doesn't mean $f$ and $g$ are ill conditioned!
+- Can get in trouble computing via composition
+
+## Sensitive subproblems
+
+```{.julia}
+function silly_sqrt(n=100)
+  x = 2.0
+  for k = 1:n
+    x = sqrt(x)
+  end
+  for k = 1:n
+    x = x^2
+  end
+  x
+end
+```
+
+- What would this compute in $\bbR$?
+- What happens in floating point?
+
+## An integral example
+
+Consider computation of
+$$
+  E_n = \int_0^1 x^n e^{x-1} \, dx
+$$
+For large $n$, have the estimate
+$$
+  E_n \approx \int_0^1 x^{n+1} \, dx = \frac{1}{n+2},
+$$
+which is always a lower bound ($x \leq \exp(x-1)$).
+
+## Recurrence relation
+
+Integration by parts gives:
+$$\begin{aligned}
+E_0 &= 1-1/e \\
+E_n &= 1-nE_{n-1}, \quad n \geq 1
+\end{aligned}$$
+What goes wrong if we implement this way?
+
+## Recurrence relation
+
+```{julia}
+let
+    n = 18
+    E = [1-1/exp(1)]
+    for k=1:n
+        push!(E, 1-k*E[end])
+    end
+    plot(0:n, E, linewidth=4, label="Recurrence")
+    plot!(0:n, 1.0 ./ (2:n+2), linewidth=4, linestyle=:dash, label="Estimate")
+end
+```
+
+## Unstable recurrence
+
+- Get a problem *even if* only rounding was in $E_0$
+- Recurrence amplifies errors very rapidly
+- Note: If we run backwards, we get something stable!
+
+## Undetected underflow
+
+Consider a stupid determinant
+$$
+  \det(10^{-2} I)
+$$
+
+- Evaluates to zero for $n > 161$!
+- Easy blunder in Bayesian statistics
+- Fix: take logs or do some quotients early!
+
+## Bad branches
+
+```{julia}
+#|echo: true
+function test_negative(x)
+  if x < 0.0
+    "$(x) is negative"
+  elseif x >= 0.0
+    "$(x) is non-negative"
+  else
+    "$(x) is ... uh..."
+  end
+end
+
+test_negative(0.0/0.0)
+```
+
+::: {.incremental}
+- Remember: All comparisons with NaN are false!
+- More subtle variant: Inconsistent decisions due to rounding
+  - Happens with geometric predicates
+:::
