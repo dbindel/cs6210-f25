@@ -43,7 +43,11 @@
     - info: HW 2 (due 9/15)
 -
   date: 2025-09-10
-  info: Floating point error, backward error analysis, conditioning
+  info: Sums, dots, error in linear systems
+  notes: 2025-09-10.html
+  ulinks:
+    - info: slides
+      url: lec/2025-09-10-slides.html
 #
 # ==================
 # Week 4
