@@ -1,0 +1,347 @@
+---
+title: "CS 6210: Matrix Computations"
+subtitle: Floating point and error analysis basics
+author: David Bindel
+date: 2025-09-03
+format:
+  revealjs:
+    embed-resources: true
+    code-annotations: below
+    html-math-method: mathjax
+    mermaid-format: svg
+---
+
+# Sums and dots
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+```{julia}
+#|echo: false
+#|output: false
+using Plots
+using LinearAlgebra
+using SparseArrays
+```
+
+## Sums
+
+```{.julia}
+function mysum(v :: AbstractVector{T}) where {T}
+    s = zero(T)
+    for vk = v
+        s += vk
+    end
+    s
+end
+```
+
+Q: How to analyze roundoff in `mysum`?
+
+. . .
+
+$$\begin{aligned}
+\hat{s}_0 &= 0, &
+\hat{s}_k &= (\hat{s}_{k-1} + v_k)(1 + \delta_k)
+\end{aligned}$$
+NB: $\delta_1 = 0$ (sum of $0 + v_1$ is computed exactly).
+
+## Sums (take 1)
+
+$$\begin{aligned}
+\hat{s}_0 &= 0, &
+\hat{s}_k &= (\hat{s}_{k-1} + v_k)(1 + \delta_k)
+\end{aligned}$$
+What happens when we run the recurrence forward?
+
+. . .
+
+$$\begin{aligned}
+\hat{s}_1 =& v_1 (1 + \delta_1) \\
+\hat{s}_2 =& v_1 (1 + \delta_1)(1 + \delta_2) + \\
+           & v_2 (1 + \delta_2) \\
+\hat{s}_3 =& v_1 (1 + \delta_1)(1 + \delta_2) (1 + \delta_3)+ \\
+           & v_2 (1 + \delta_2) (1 + \delta_3)+ \\
+           & v_3 (1 + \delta_3)
+\end{aligned}$$
+
+## Sums (take 1)
+
+$$\begin{aligned}
+  \hat{s}_k 
+  &= \sum_{i=1}^k v_i \prod_{j=i}^k (1 + \delta_j) \\
+  &= \sum_{i=1}^k v_i \left(1 + \sum_{j=i}^k \delta_j\right) +
+  O(\macheps^2)
+\end{aligned}$$
+
+. . .
+
+$$\begin{aligned}
+  \hat{s}_k-s_k &= \sum_{i=1}^k v_i \sum_{j=i}^k \delta_j +
+  O(\macheps^2) \\
+  \left|\hat{s}_k-s_k\right| &\leq \|v\|_1 (k-1) \macheps +
+  O(\macheps^2)
+\end{aligned}$$
+
+## Sums (take 2)
+
+$$\begin{aligned}
+\hat{s}_0 &= 0, &
+\hat{s}_k &= (\hat{s}_{k-1} + v_k)(1 + \delta_k) \\
+s_0 &= 0, &
+s_k &= s_{k-1} + v_k \\\hline
+e_0 &= 0, &
+e_k &= e_{k-1} + (\hat{s}_{k-1} + v_k) \delta_k \\&&
+e_k &= e_{k-1} + s_k \delta_k + O(\macheps^2)
+\end{aligned}$$
+Now bound each $|s_k|\leq\|v\|_1$ for the same bound as before.
+
+. . .
+
+We will see the pattern of analyzing an error recurrence again!
+
+## Sums (take 3)
+
+Already showed
+$$
+  \hat{s}_n = \sum_{i=1}^n v_i \prod_{j=i}^n (1+\delta_j).
+$$
+Then $\hat{s}_n = \sum_{i=1}^n \hat{v}_i$
+$$
+  \hat{v}_i = v_i \prod_{j=i}^n (1+\delta_j) = v_i (1+\tilde{\delta}_i)
+$$
+where $|\tilde{\delta}_i| \lesssim (n-1) \macheps$.
+
+## Sums (take 3)
+
+Normwise relative error: 
+$$\|\hat{v}-v\|_1 \lesssim (n-1) \macheps \|v\|_1$$
+
+Rearrange $\left|\hat{s}-s\right| \leq \|\hat{v}-v\|_1$ to get:
+$$
+  \frac{\left|\hat{s}-s\right|}{|s|}
+  \leq \frac{\|v\|_1}{|s|} \frac{\|\hat{v}-v\|_1}{\|v\|_1} \\
+  \lesssim \frac{\|v\|_1}{|s|} (n-1) \macheps
+$$
+Here $\|v\|_1/|s|$ is the condition number for the problem.
+
+## Running error bounds
+
+Have error bound on sums
+$$
+  |\hat{s}_n-s_n| \lesssim \sum_{j=2}^n |\hat{s}_j| \macheps.
+$$
+Can code it up to get an (approximate) upper bound
+```{julia}
+#| echo: true
+#| output: false
+function mysum(v :: AbstractVector{T}) where {T}
+    s = zero(T)
+    e = zero(T)
+    for vk = v
+        s += vk
+        e += abs(s) * eps(T)
+    end
+    s, e
+end
+```
+
+## Compensated summation
+
+```{julia}
+#| echo: true
+#| output: false
+function mycsum(v :: AbstractVector{T}) where {T}
+    s = zero(T)
+    c = zero(T)
+    for vk = v
+        y = vk-c
+        t = s+y
+        c = (t-s)-y  # Key step
+        s = t
+    end
+    c + s
+end
+```
+
+- Error bounds: $2 \macheps \|v\|_1 + O(\macheps^2)$
+- Exact for up to $2^k$ terms within about $2^{p-k}$ magnitude
+- Can't get these properties in $1+\delta$ model!
+
+## Dots
+
+Real dot product:
+```{.julia}
+dot(x,y) = sum(xk*yk for (xk,yk) in zip(x,y))
+```
+
+- Sum of $x_i y_i (1+\gamma_i)$ for $|\gamma_i| < \macheps$
+- Gives an immediate error bound of $n \macheps |x| \cdot |y|$
+- Alternately, write as $\hat{x} \cdot y$ where $|\hat{x}_i-x_i|
+  \lesssim n \macheps |x_i|$
+- Similar logic works for matrix-vector products
+
+## Back-substitution
+
+Now consider $Uy = b$ where $U$ upper triangular.
+
+Ex:
+$$
+  U = \begin{bmatrix} 1 & 3 & 5 \\ & 4 & 2 \\ & & 6 \end{bmatrix}, \quad
+  b = \begin{bmatrix} 1 \\ -12 \\ 12 \end{bmatrix}
+$$
+
+## Back-substitution
+
+```{julia}
+#| echo: true
+#| output: false
+# Computes y = U\b
+function my_backsub(U, b)
+    y = copy(b)
+    m, n = size(U)
+    for i = n:-1:1
+        for j = i+1:n
+            y[i] -= U[i,j]*y[j]
+        end
+        y[i] /= U[i,i]
+    end
+    y
+end
+```
+In math
+$$
+  y_i = \left( b_i - \sum_{j > i} u_{ij} y_j \right)/u_{ii}.
+$$
+
+## Error analysis of backsub
+
+Consider
+$$
+  \hat{y}_i = \left( b_i - \sum_{j > i} \hat{u}_{ij} y_j \right)/u_{ii} (1+\gamma_i)(1+\eta_i).
+$$
+
+- From dot analysis: $|\hat{u}_{ij}-u_{ij}| \leq (n-i-1) \macheps |u_{ij}|$
+- Write $\hat{u}_{ii} = u_{ii}/(1+\gamma_i)(1+\eta_i)$ (rel err $2 \macheps$)
+- Gives $\hat{U} \hat{y} = b$ where $|\hat{U}-U| \lesssim n \macheps |U|$
+  (elementwise)
+- Now we just need to understand sensitivity to perturbation!
+
+# Error in linear systems
+
+## First-order analysis
+
+Linear system
+$$Ax = b$$
+Perturbation
+$$\delta A \, x + A \, \delta x = \delta b$$
+Rewrite as
+$$
+\delta x = A^{-1} (\delta b - \delta A \, x)
+$$
+
+## Norm bounds
+
+$$\begin{aligned}
+\frac{\|\delta x\|}{\|x\|}
+&\leq
+\frac{\|A^{-1} \delta b\|}{\|x\|} +
+\frac{\|A^{-1} \delta A \, x\|}{\|x\|} \\
+&\leq
+\kappa(A) \left( 
+\frac{\|\delta b\|}{\|b\|} +
+\frac{\|\delta A\|}{\|A\|} \right). 
+\end{aligned}$$
+
+Q: How do we get from first to second line?
+
+## Beyond first order
+
+$$\begin{aligned}
+\frac{\|\hat{x}-x\|}{\|x\|}
+&\leq
+\frac{\|A^{-1} (\hat{b}-b)\|}{\|x\|} +
+\frac{\|A^{-1} E \, x\|}{\|x\|} \\
+&\leq
+\kappa(A) \left( 
+\frac{\|\hat{b}-b\|}{\|b\|} +
+\frac{\|E\|}{\|A\|} \frac{\|\hat{x}\|}{\|x\|} \right). 
+\end{aligned}$$
+If $\|A^{-1}E\| < 1$, Neumann bound gives
+$$
+\frac{\|\hat{x}-x\|}{\|x\|} \leq
+\frac{\kappa(A)}{1-\|A^{-1} E\|} \left( 
+\frac{\|\hat{b}-b\|}{\|b\|} + \frac{\|E\|}{\|A\|} \right). 
+$$
+
+## Componentwise sensitivity
+
+Consider componentwise relative error bound:
+$$
+  |\delta A| \leq \epsilon_A |A|, \quad
+  |\delta b| \leq \epsilon_b |b|
+$$
+Then (neglecting $O(\epsilon^2)$ terms
+$$\begin{aligned}
+  \left|\delta x\right| 
+  &\leq |A^{-1}| (\epsilon_b |b| + \epsilon |A| |x|) \\
+  &\leq (\epsilon_b + \epsilon_A) |A^{-1}| |A| |x|.
+\end{aligned}$$
+
+## Componentwise sensitivity
+
+For any vector norm so $\|\,|x|\,\| = \|x\|$, have
+$$
+  \|\delta x\| \leq (\epsilon_b + \epsilon_A) \kappa_{\mathrm{rel}}(A) \|x\|
+$$
+where $\kappa_{\mathrm{rel}}(A) = \|\,|A^{-1}|\,|A|\,\|$.
+
+Useful for thinking about *poorly scaled* problems.
+
+## Residuals
+
+Residual is $r = A\hat{x}-b$.  Relation to ordinary error:
+$$
+  \hat{x}-x = A^{-1} r
+$$
+Will see this equation many times later!
+
+## Residuals (take 2)
+
+Can re-cast residual error as backward error on $A$:
+$$
+  \left(A - \frac{r \hat{x}^T}{\|\hat{x}\|^2} \right) \hat{x} = b
+$$
+
+## Residual norm bounds
+
+$$
+  \frac{\|\hat{x}-x\|}{\|x\|} 
+  \leq \frac{\|A\|^{-1} \|r\|}{\|x\|}
+  = \kappa(A) \frac{\|r\|}{\|A\| \|x\|}
+  \leq \kappa(A) \frac{\|r\|}{\|b\|}
+$$
+
+- This is really a bound we saw before
+- But everything in this version can be estimated!
+
+# Punchline
+
+## Backward error
+
+- Useful to recast rounding in terms of backward error
+- Combine with condition number to get forward bounds
+- Puts rounding on even footing with other errors
+  - Due to measurement error
+  - Due to error inherited from earlier computations
+  - Due to termination of iterations
+
+## Floating point
+
+Backward error analysis of roundoff is great, but:
+
+- Analysis breaks down for under/overflow
+- And may sometimes be pessimistic
+  - Because $1+\delta$ bounds may be pessimistic
+  - Because norm bounds are just bounds
