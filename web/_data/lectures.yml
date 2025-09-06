@@ -54,6 +54,10 @@
 -
   date: 2025-09-15
   info: Gaussian elimination and Cholesky I
+  notes: 2025-09-15.html
+  ulinks:
+    - info: slides
+      url: lec/2025-09-15-slides.html
   hw:
     - info: HW 3 (due 9/22)
 -
