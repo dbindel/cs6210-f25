@@ -749,9 +749,9 @@ block-beta
     a4["a42"]
     a5["a32"]
     a6["a43"]
-    a7["a41"]
-    a8["a42"]
-    a9["a43"]
+    a7["a14"]
+    a8["a24"]
+    a9["a34"]
     aa["a44"]
   end
   class ti BT
@@ -807,9 +807,9 @@ block-beta
     a4["a42"]
     a5["a32"]
     a6["a43"]
-    a7["a41"]
-    a8["a42"]
-    a9["a43"]
+    a7["a14"]
+    a8["a24"]
+    a9["a34"]
     aa["a44"]
     space
   end

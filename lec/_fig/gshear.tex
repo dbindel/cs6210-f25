@@ -1,0 +1,13 @@
+\documentclass[dvisvgm,tikz]{standalone}
+\begin{document}
+\begin{tikzpicture}
+\draw[<->] (2,0) -- (0,0) -- (0,2);
+\draw[<->,ultra thick] (1,0) -- (0,0) -- (0,1);
+\draw[-,thick] (1,0) -- (1,1) -- (0,1);
+\draw[<->] (7,0) -- (5,0) -- (5,2);
+\draw[<->,ultra thick, red] (6,-0.5) -- (5,0) -- (5,1);
+\draw[-,thick,red] (6,-0.5) -- (6,0.5) -- (5,1);
+\draw[->] (2,1) -- (4,1);
+\node[below] at (3,1) {$M$};
+\end{tikzpicture}
+\end{document}

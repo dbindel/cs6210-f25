@@ -1,8 +1,8 @@
 ---
 title: "CS 6210: Matrix Computations"
-subtitle: Floating point and error analysis basics
+subtitle: Sums, dots, and error in linear systems
 author: David Bindel
-date: 2025-09-03
+date: 2025-09-10
 format:
   revealjs:
     embed-resources: true
@@ -338,7 +338,7 @@ $$
   \frac{V \Sigma^{-1} U^T r}{\|V \Sigma^{-1} U^T b\|} =
   \sum_j v_j c_j \frac{\sigma_j}{\sigma_1} \frac{\|r\|}{\|b\|}
 $$
-for some cofficients $c$ where $\|c\|_2 \leq 1$.
+for some coefficients $c$ where $\|c\|_2 \leq 1$.
 
 ## Lost in the norm
 

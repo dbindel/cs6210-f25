@@ -4,9 +4,12 @@ project:
   render:
     - "2025-*.qmd"
 
+execute:
+  freeze: auto
+
 bibliography: references.bib
 
-engine: knitr
+#engines: ['julia']
 
 format:
   html:

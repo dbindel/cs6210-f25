@@ -1,0 +1,801 @@
+---
+title: "CS 6210: Matrix Computations"
+subtitle: Gaussian elimination
+author: David Bindel
+date: 2025-09-15
+format:
+  revealjs:
+    embed-resources: true
+    code-annotations: below
+    html-math-method: mathjax
+    mermaid-format: svg
+---
+
+# Introduction
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+```{julia}
+#|echo: false
+#|output: false
+using Plots
+using LinearAlgebra
+using SparseArrays
+using Printf
+```
+
+## Introduction
+
+Goal (3 lec): LU factorization and co
+
+- AKA Gaussian elimination
+- Workhorse for linear systems (not the only way)
+- Not just for linear systems!
+- More subtle than you think...
+
+## Points to remember
+
+- Nonzero matrices can still be singular
+- Some matrices are rectangular
+- Can still factor singular and rectangular matrices!
+
+## Julia notes
+
+- Will want to use `LinearAlgebra` throughout
+- `A\b` and `c'/A` compute $A^{-1} b$ and $c^T A^{-1}$
+- Can also use forward/backslash with *factorization objects*
+- We *can* explicitly call `inv`, but almost never *should*
+
+## Linear systems in Julia
+
+```{julia}
+#| echo: true
+let
+    # Set up test problem with known solution
+    A    = [1.0 2.0; 3.0 4.0]
+    xref = [5.0; 6.0]
+    b    = A*xref
+
+    x1 = inv(A)*b  # AVOID EXPLICIT INVERSES!
+    x2 = A\b       # Good for one solve
+
+    F = lu(A)      # Save factorization object
+    x3 = F\b       # Good for multiple solves
+
+    x1 ≈ xref, x2 ≈ xref, x3 ≈ xref
+end
+```
+
+## Julia views
+
+$$\begin{bmatrix}
+1 & 4 & 7 \\
+2 & {\color{red}5} & {\color{red}8} \\
+3 & {\color{red}6} & {\color{red}9}
+\end{bmatrix}$$
+
+```{julia}
+#| echo: true
+let
+    A = [1 4 7; 2 5 8; 3 6 9]  # Create matrix, bind to name A
+    B = @view A[2:3,2:3]       # Create view, bind to name B
+    B[1,1] = 10
+    A
+end
+```
+
+## Julia views
+
+$$\begin{bmatrix}
+1 & 4 & 7 \\
+2 & {\color{red}5} & {\color{red}8} \\
+3 & {\color{red}6} & {\color{red}9}
+\end{bmatrix}$$
+
+- Matrix object owns storage
+- A submatrix view *references* a piece of that storage
+- Ex: `B[1,1] = 10` also changes `A[2,2]` to `10` (same data!)
+
+## Julia views
+
+In general:
+
+- Views provide *interpretation* of storage
+- That storage is "owned" by someone else
+
+In particular: strided views have
+
+- Fixed offset between rows (row stride --- unit is best)
+- Fixed offset between cols (col stride)
+- Often relatively fast arithmetic routines
+
+## Julia views
+
+Views don't have to just reference submatrices!
+
+```{julia}
+#| echo: true
+let
+    A = [1 4 7; 2 5 8; 3 6 9]
+    L = UnitLowerTriangular(A)  # This is a view
+    U = UpperTriangular(A)      # This is, too!
+    A[3,3] = 10
+    display(L)
+    display(U)
+end
+```
+
+# Gaussian elimination
+
+## Gauss transformations
+
+![](_fig/gshear.svg){.nostretch fig-align="center" width="80%"}
+
+Example:
+$M = \begin{bmatrix} 1 & 0 \\ -0.5 & 1 \end{bmatrix}$
+
+## Gauss transformations
+
+![](_fig/gshear.svg){.nostretch fig-align="center" width="80%"}
+
+- Geometrically: a type of simple shear (preserves volume!)
+- Write as $M^{(j)} = I - \tau_j e_j^T$, $(\tau_j)_k = 0$ for $k \leq j$
+
+## Gauss transformations
+
+Write as $M^{(j)} = I - \tau_j e_j^T$.
+Then for $(\tau_j)_k = v_k/v_j$:
+
+$$(I - \tau_j e_j^T) v = \begin{bmatrix} v_1 \\ \vdots \\ v_j \\ 0 \\
+\vdots \\ 0 \end{bmatrix}$$
+
+Operation "zeros out" entries after index $j$.
+
+## Gauss transformations
+
+Write as $M^{(j)} = I - \tau_j e_j^T$.
+
+- Interpretation of $M^{(j)} v$: subtract $(\tau_{j})_k v_j$ from $v_k$,
+  $k > j$.
+- Interpretation of $(M^{(j)})^{-1} v$: add $(\tau_{j})_k v_j$ to $v_k$,
+  $k > j$
+- Note: $(M^{(j)})^{-1} = I + \tau_j e_j^T$
+
+Q: Why is $(I + \tau_j e_j^T) (I - \tau_j e_j^T) = I$?
+
+## Gaussian elimination
+
+- Apply Gauss transforms to $A$ to "zero out" subdiagonals
+- Transformed matrix is upper triangular ($U$)
+- (Inverse) transforms into unit lower triangular $L$
+- Result: $A = LU$
+
+```{julia}
+#| echo: false
+#| output: asis
+
+function print_lvector(v :: AbstractVector)
+    m = length(v)
+    println("\\begin{bmatrix}")
+    for i = 1:m
+        println("$(v[i]) \\\\")
+    end
+    println("\\end{bmatrix}")
+end
+
+function print_cvector(v :: AbstractVector, c)
+    m = length(v)
+    println("\\begin{bmatrix}")
+    for i = 1:m
+        println("{\\color{$(c[i])}$(v[i])} \\\\")
+    end
+    println("\\end{bmatrix}")
+end
+
+function print_lmatrix(A :: AbstractMatrix)
+    m, n = size(A)
+    println("\\begin{bmatrix}")
+    for i = 1:m
+        print("$(A[i,1])")
+        for j = 2:n
+            print(" & $(A[i,j])")
+        end
+        println(" \\\\")
+    end
+    println("\\end{bmatrix}")
+end
+
+function print_cmatrix(A :: AbstractMatrix, c)
+    m, n = size(A)
+    println("\\begin{bmatrix}")
+    for i = 1:m
+        print("{\\color{$(c[i,1])}$(A[i,1])}")
+        for j = 2:n
+            print(" & {\\color{$(c[i,j])}$(A[i,j])}")
+        end
+        println(" \\\\")
+    end
+    println("\\end{bmatrix}")
+end
+
+function black_cmatrix(m, n)
+    c = Matrix{String}(undef,m,n)
+    c[:] .= "black"
+    c
+end
+
+function gray_zero_cmatrix(A, c)
+    c[A .== 0] .= "lightgray"
+    A, c
+end
+
+gray_zero_cmatrix(A) = gray_zero_cmatrix(A, black_cmatrix(size(A)...))
+
+function gauss_cmatrix(tau :: AbstractVector{T}, j) where {T}
+    n = j + length(tau)
+    M = Matrix{T}(I, n, n)
+    M[j+1:n,j] .= -tau
+    c = black_cmatrix(n, n)
+    c[j+1:n,j] .= "red"
+    gray_zero_cmatrix(M, c)
+end
+
+let
+    k, b, r, g, p = "black", "blue", "red", "lightgray", "purple"
+    A = [1 4  7; 2 5  8; 3 6 10]
+    U = copy(A)
+    L = Matrix{Int}(I,3,3)
+
+    println("## Example\n")
+    println("\$\$A = A^{(0)} = ")
+    print_lmatrix(A)
+    println("\$\$\n")
+
+    for j = 1:2
+        println("## Example\n")
+       
+        println("\$\$")
+        c = black_cmatrix(3,3)
+        c[j,j:3] .= b
+        L[j+1:3,j] =  U[j+1:3,j]/U[j,j]
+        print_cmatrix(gauss_cmatrix(L[j+1:3,j],j)...)
+        print_cmatrix(U, c)
+        println("=")
+        U[j+1:end,j:end] -= L[j+1:end,j]*U[j,j:end]'
+        c[j+1:3,j+1:3] .= p
+        print_cmatrix(gray_zero_cmatrix(U, c)...)
+        println("\$\$\n")
+
+        println("Subtract multiples of row $j to introduce zeros in column $j:")
+        println("\$\$(I-\\tau_$j e_$j^T) A^{($(j-1))} = A^{($j)}, ")
+        println("\\quad\\tau_$j = ")
+        tau = zeros(Int,3)
+        tau[j+1:3] = L[j+1:3,j]
+        ctau = [r; r; r]
+        ctau[1:j] .= g
+        print_cvector(tau, ctau)
+        println(",\\quad e_$j = ")
+        ej = zeros(Int,3); ej[j] = 1
+        print_lvector(ej)
+        println("\$\$\n")
+    end
+
+    println("## Example\n")
+    println("\$\$")
+    for j = 2:-1:1
+        print_cmatrix(gauss_cmatrix(L[j+1:3,j],j)...)
+    end
+    print_lmatrix(A)
+    println(" = ")
+    print_cmatrix(gray_zero_cmatrix(U)...)
+    println("\$\$\n")
+    println(". . .\n")
+    println("But note: \$(I-\\tau_j e_j^T)^{-1} = (I + \\tau_j e_j)\$ -- so\n")
+
+    println("\$\$")
+    print_lmatrix(A)
+    println("= ")
+    for j = 1:2
+        print_cmatrix(gauss_cmatrix(-L[j+1:3,j],j)...)
+    end
+    print_cmatrix(gray_zero_cmatrix(U)...)
+    println("\$\$\n")
+
+    println("## Example\n")
+    println("Now note: \$(I+\\tau_1 e_1^T) (I + \\tau_2 e_2^T) = I + \\tau_1 e_1^T + \\tau_2 e_2^T\$\n")
+
+    println("\$\$")
+    for j = 1:2
+        print_cmatrix(gauss_cmatrix(-L[j+1:3,j],j)...)
+    end
+    println(" = ")
+    print_cmatrix(L, [k g g; r k g; r r k])
+    println("\$\$\n")
+    println("Therefore \$A = LU\$:\n")
+    println("\$\$")
+    print_lmatrix(A)
+    println("=")
+    print_cmatrix(L, [k g g; r k g; r r k])
+    print_cmatrix(gray_zero_cmatrix(U)...)
+    println("\$\$\n")
+
+    println("## Example")
+    println("\$\$")
+    print_lmatrix(A)
+    println("=")
+    print_cmatrix(L, [k g g; r k g; r r k])
+    print_cmatrix(gray_zero_cmatrix(U)...)
+    println("\$\$\n")
+    println("Solve \$Ax = b\$ by:\n")
+    println("- Forward substitution \$Ly = b\$ and")
+    println("- Back substitution \$Ux = y\$:\n")
+
+    println("## Example\n")
+    println("Forward substitution:")
+    println("\$\$")
+    print_cmatrix(L, [k g g; r k g; r r k])
+    print_lvector(["y_1", "y_2", "y_3"])
+    println(" = ")
+    print_lvector([12; 15; 19])
+    println("\$\$\n")
+    println(". . .\n")
+    println("\$\$y = ")
+    print_lvector([12; -9; 1])
+    println("\$\$\n")
+
+    println("## Example\n")
+    println("Back substitution:")
+    println("\$\$")
+    print_cmatrix(U, [k k k; g k k; g g k])
+    print_lvector(["x_1", "x_2", "x_3"])
+    println(" = ")
+    print_lvector([12; -9; 1])
+    println("\$\$\n")
+    println(". . .\n")
+    println("\$\$x = ")
+    print_lvector([1; 1; 1])
+    println("\$\$\n")
+    
+    println("## Example\n")
+    println("\$\$")
+    print_lmatrix(A)
+    println("=")
+    print_cmatrix(L, [k g g; r k g; r r k])
+    print_cmatrix(gray_zero_cmatrix(U)...)
+    println("\$\$\n")
+
+    println("And we can pack both factors into one matrix:")
+    println("\$\$")
+    print_cmatrix(L-I+U, [k k k; r k k; r r k])
+    println("\$\$\n")    
+    
+end
+```
+
+## Code: Separate factors
+
+```{.julia}
+function mylu_v1(A)
+    n = size(A)[1]
+    L = Matrix(1.0I, n, n)
+    U = copy(A)
+    for j = 1:n-1
+        for i = j+1:n
+            L[i,j] = U[i,j]/U[j,j] #<1>
+            U[i,j] = 0.0
+            for k = j+1:n
+                U[i,k] -= L[i,j]*U[j,k] #<2>
+            end
+        end
+    end
+    L, U
+end
+```
+1. Figure out multiple of row $j$ to subtract from row $i$
+2. Subtract off the appropriate multiple of row $j$ from row $i$
+
+## Code: Packed storage
+
+```{.julia}
+function mylu_v2(A)
+    n = size(A)[1]
+    A = copy(A)
+    for j = 1:n-1
+        for i = j+1:n
+            A[i,j] = A[i,j]/A[j,j] #<1>
+            for k = j+1:n
+                A[i,k] -= A[i,j]*A[j,k] #<2>
+            end
+        end
+    end
+    UnitLowerTriangular(A), UpperTriangular(A) #<3>
+end
+```
+1. Figure out multiple of row $j$ to subtract from row $i$
+2. Subtract off the appropriate multiple of row $j$ from row $i$
+3. Return *views* of (unit) lower and upper triangles
+
+## Code: Packed storage
+
+```{.julia}
+function mylu_v2b(A)
+    n = size(A)[1]
+    A = copy(A)
+    for j = 1:n-1
+        A[j+1:n,:] ./= A[j,j] #<1>
+        A[j+1:n,j+1:n] .-= A[j+1:n,:] * A[:,j+1:n] #<2>
+    end
+    UnitLowerTriangular(A), UpperTriangular(A) #<3>
+end
+```
+1. Figure out multiple of row $j$ to subtract from row $i$
+2. Subtract off the appropriate multiple of row $j$ from row
+   $i$. (This version forms outer product)
+3. Return *views* of (unit) lower and upper triangles
+
+## Code: Packed storage
+
+```{.julia}
+function mylu_v2b(A)
+    n = size(A)[1]
+    A = copy(A)
+    for j = 1:n-1
+        lj = @view A[j+1:n,j] #<1>
+        uj = @view A[j,j+1:n]
+        lj[:] ./= A[k,k] #<2>
+        BLAS.ger!(-1.0, lj, uj, view(A,j+1:n,j+1:n)) #<3>
+    end
+    UnitLowerTriangular(A), UpperTriangular(A) #<4>
+end
+```
+1. Also use views of pieces of $A$
+2. Figure out multiple of row $j$ to subtract from row $i$
+3. Subtract off the appropriate multiple of row $j$ from row
+   $i$.  (This version uses a BLAS call -- more efficient.)
+4. Return *views* of (unit) lower and upper triangles
+
+# Block elimination
+
+## Block 2-by-2 LU
+
+Block perspective on $A = LU$:
+$$
+\begin{bmatrix} A_{11} & A_{12} \\ A_{21} & A_{22} \end{bmatrix} =
+\begin{bmatrix} L_{11} &        \\ L_{21} & L_{22} \end{bmatrix}
+\begin{bmatrix} U_{11} & U_{12} \\        & U_{22} \end{bmatrix}
+$$
+Can think of this as four matrix equations
+$$\begin{aligned}
+A_{11} &= L_{11} U_{11} \\
+A_{12} &= L_{11} U_{12} \\
+A_{21} &= L_{21} U_{11} \\
+A_{22} &= L_{21} U_{12} + L_{22} U_{22}
+\end{aligned}$$
+
+## Block LU computation
+
+Matrix equations $\implies$ computational steps
+
+::: {.columns}
+
+::: {.column}
+$$\begin{aligned}
+A_{11} &= L_{11} U_{11} \\
+A_{12} &= L_{11} U_{12} \\
+A_{21} &= L_{21} U_{11} \\
+A_{22} &= L_{21} U_{12} + L_{22} U_{22}
+\end{aligned}$$
+:::
+
+::: {.column}
+$$\begin{aligned}
+L_{11} U_{11} &= A_{11}  \\
+U_{12} &= L_{11}^{-1} A_{12} \\
+L_{21} &= A_{21} U_{11}^{-1} \\
+L_{22} U_{22} &= A_{22} - L_{21} U_{12}
+\end{aligned}$$
+:::
+
+:::
+
+Trailing submatrix in last step is a *Schur complement*:
+$$\begin{aligned}
+  S &= A_{22} - L_{21} U_{12} \\
+    &= A_{22} - A_{21} A_{11}^{-1} A_{12}
+\end{aligned}$$
+
+## Alternate: block elimination
+
+Can do blocked view of LU *or* eliminate blockwise:
+$$
+\begin{bmatrix} A_{11} & A_{12} \\ A_{21} & A_{22} \end{bmatrix} =
+\begin{bmatrix} I & 0 \\ A_{21} A_{11}^{-1} & I \end{bmatrix}
+\begin{bmatrix} A_{11} & A_{12} \\ 0 & S \end{bmatrix}
+$$
+where $S = A_{22} - A_{21} A_{11}^{-1} A_{12}$ as before!
+
+## Why does it matter?
+
+Suppose a fast solver $g(b)$ for $Ax = b$ and consider
+
+$$\begin{bmatrix} A & v \\ v^T & 0 \end{bmatrix}
+  \begin{bmatrix} x \\ \lambda \end{bmatrix} =
+  \begin{bmatrix} b \\ 0 \end{bmatrix}$$
+
+Schur complement system gives:
+
+$$\lambda = \frac{v^T g(b)}{v^T g(v)}$$
+
+Back substitute to get $x = g(b) - \lambda g(v)$.  Only two $g$ calls!
+
+## Schur complement meaning
+
+Let $B = A^{-1}$.  Then $AB = LUB = I$, so
+
+$$
+\begin{bmatrix} L_{11} & \\ L_{21} & L_{22} \end{bmatrix}
+\begin{bmatrix} U_{11} & U_{12} \\ & U_{22} \end{bmatrix}
+\begin{bmatrix} B_{21} \\ B_{22} \end{bmatrix} =
+\begin{bmatrix} 0 \\ I \end{bmatrix}.
+$$
+
+Block forward and back substitution gives:
+
+$$
+\begin{bmatrix} B_{21} \\ B_{22} \end{bmatrix} =
+\begin{bmatrix} -U_{11}^{-1} U_{12} S^{-1} \\ S^{-1} \end{bmatrix}
+$$
+
+where the Schur complement $S$ is $L_{22} U_{22}$
+
+## Schur complement meaning
+
+Conclusion:
+$$S = L_{22} U_{22} = B_{22}^{-1} = ((A^{-1})_{22})^{-1}$$
+
+Schur complement is an
+
+- Inverse
+- Of a submatrix
+- Of an inverse
+
+Can make sense of each of these in an abstract setting!
+
+## Block perspective gains
+
+- Fast level-3 BLAS rich codes
+- Approach to fast solves for bordered systems
+- Interesting interpretation of Schur complement
+
+# Backward error analysis
+
+## Backward error
+
+Idea: write $A = LU$ as:
+$$
+  u_{jk} = a_{jk} - \sum_{i=1}^{j-1} l_{ji} u_{ij}
+$$
+Computed version has $|\delta_i| \leq (j-1) \macheps$ s.t.
+$$
+  \hat{u}_{jk} = a_{jk}(1+\delta_0) - 
+  \sum_{i=1}^{j-1} \hat{l}_{ji} \hat{u}_{ij} (1+\delta_i) + O(\macheps^2)
+$$
+True independent of order.
+
+## Turn it around
+
+$$\begin{aligned}
+  a_{jk} & =
+  \frac{1}{1+\delta_0} \left(
+    \hat{l}_{jj} \hat{u}_{jk} +
+    \sum_{i=1}^{j-1} \hat{l}_{ji} \hat{u}_{ik} (1 + \delta_i)
+  \right) + O(\macheps^2) \\
+  & =
+    \hat{l}_{jj} \hat{u}_{jk} (1 - \delta_0) +
+    \sum_{i=1}^{j-1} \hat{l}_{ji} \hat{u}_{ik} (1 + \delta_i - \delta_0) +
+    O(\macheps^2) \\
+  & =
+    \left( \hat{L} \hat{U} \right)_{jk} + e_{jk} \\
+  e_{jk} &=
+    -\hat{l}_{jj} \hat{u}_{jk} \delta_0 +
+    \sum_{i=1}^{j-1} \hat{l}_{ji} \hat{u}_{ik} (\delta_i - \delta_0) +
+    O(\macheps^2)
+\end{aligned}$$
+
+## A little more work, and...
+
+$$
+  A = \hat{L} \hat{U} + E, \mbox{ where }
+  |E| \leq n \macheps |\hat{L}| |\hat{U}| + O(\macheps^2).
+$$
+Then backward error from forward and backward substitution.
+
+::: {.incremental}
+- But wait: what if $|L| |U| \gg |A|$?
+- Control via *growth factor*
+- This really just gives the problem a name...
+- (Partial) solution: (partial) pivoting
+:::
+
+# Pivoting
+
+## The problem
+
+- What if $|L| |U| \gg |A|$?
+- Extreme case: divide by zero
+- Still bad: divide by tiny
+
+## Fixing the problem?
+
+Bad:
+$$
+  A = \begin{bmatrix} \delta & 1 \\ 1 & 1 \end{bmatrix} =
+      \begin{bmatrix} 1 & 0 \\ \delta^{-1} & 1 \end{bmatrix}
+      \begin{bmatrix} \delta & 1 \\ 0 & 1-\delta^{-1} \end{bmatrix}.
+$$
+
+. . .
+
+Fine:
+$$
+  PA =
+      \begin{bmatrix} 1 & 1 \\ \delta & 1 \end{bmatrix} =
+      \begin{bmatrix} 1 & 0 \\ \delta & 1 \end{bmatrix}
+      \begin{bmatrix} 1 & 1 \\ 0 & 1-\delta \end{bmatrix}.
+$$
+How to choose permutation $P$ more generally?
+
+## Partial pivoting
+
+Goal: $PA = LU$ where $L$ controlled.  
+Idea: At step $j$, eliminate $x_j$ from remaining equations
+
+- Can use *any of* equations $j$ through $n$
+- Choose equation $i$ with largest $|S^{(j)}_{ij}|$
+- Swap rows $i$ and $j$ and eliminate
+- Result: $|l_{ij}| \leq 1$
+
+```{julia}
+#| echo: false
+#| output: asis
+let
+    n = 4
+    A = [ 0.685721  0.391918  0.317972   0.41447;
+          0.860836  0.705316  0.0148747  0.219443;
+          0.400037  0.510902  0.74541    0.998041;
+          0.534435  0.422709  0.584054   0.124082]
+    c = black_cmatrix(n,n)
+    piv = Vector(1:n)
+    cpiv = ["black", "black", "black", "black"]
+
+    function print_slide(txt)
+        println("## Example\n")
+        println("\$\$")
+        AA = [@sprintf("%.2f", A[i,j]) for i=1:n, j=1:n]
+        print_cmatrix(AA, c)
+        println("\\quad")
+        print_cvector(piv, cpiv)
+        println("\$\$\n")
+        println(txt)
+        println("")
+    end
+
+    print_slide("Initial matrix and permutation \$\\pi\$")
+    for j = 1:n-1
+        jj = findmax(abs.(A[j:n,j]))[2] + j-1
+
+        # Highlight and show swap
+        c[jj,:] .= "brown"
+        c[j,:] .= "brown"
+        cpiv[jj] = "brown"
+        cpiv[j] = "brown"
+        print_slide("Identify pivot (column $j)")
+        for k = 1:n
+            A[jj,k], A[j,k] = A[j,k], A[jj,k]
+        end
+        piv[jj], piv[j] = piv[j], piv[jj]
+        print_slide("Apply swap ($j with $jj)")
+
+        # Restore color
+        c[j,1:j-1]  .= "red"; c[j,j:end]  .= "black"; cpiv[j] =  "black"
+        c[jj,1:j-1] .= "red"; c[jj,j:end] .= "black"; cpiv[jj] = "black"
+        
+        # Compute multipliers
+        A[j+1:n,j] /= A[j,j]
+        c[j+1:n,j] .= "red"
+        c[j,j:n]   .= "blue"
+        print_slide("Compute multipliers in column $j")
+
+        # Apply complement
+        A[j+1:n,j+1:n] -= A[j+1:n,j] * A[j,j+1:n]'
+        c[j+1:n,j+1:n] .= "purple"
+        print_slide("Schur complement")
+
+        # Restore black
+        c[j+1:n,j+1:n] .= "black"
+    end
+
+    c[n,n] = "blue"
+    print_slide("Final factorization \${\\color{red}L}{\\color{blue}U}\$ and \$\\pi\$")
+end
+```
+
+## Partial pivoting code
+
+```{.julia}
+function mypivlu(A)
+    n = size(A)[1]
+    A = copy(A)
+    p = Vector(1:n)
+    for j = 1:n-1
+        jj = findmax(abs.(A[j:n,j]))[2] + j-1    # Find pivot
+        p[jj], p[j] = p[j], p[jj]                # Record it
+        for k = 1:n                              # Apply swap
+            A[jj,k], A[j,k] = A[j,k], A[jj,k]
+        end
+        A[j+1:n,j] /= A[j,j]                     # Multipliers
+        A[j+1:n,j+1:n] -= A[j+1:n,j]*A[j,j+1:n]' # Schur complement
+    end
+    p, UnitLowerTriangular(A), UpperTriangular(A)
+end
+```
+
+## Deferred updating
+
+What about blocking?  Do standard LU on a few columns
+$$
+\begin{bmatrix} A_{11} & A_{12} \\ A_{21} & A_{22} \end{bmatrix} \rightarrow
+\begin{bmatrix} (L/U)_{11} & A_{12} \\ L_{21} & A_{22} \end{bmatrix}
+$$
+Then apply permutations in a batch
+$$
+\begin{bmatrix} (L/U)_{11} & (PA)_{12} \\ L_{21} & (PA)_{22} \end{bmatrix}
+$$
+Then $U_{12} = L_{11}^{-1} (PA)_{12}$ (level 3 BLAS)  
+Then Schur complement (level 3 BLAS)
+
+## Problems with partial pivoting
+
+Gaussian elimination with Partial Pivoting (GEPP) is standard
+
+::: {.incremental}
+- But it is *not* uniformly backward stable
+  - $L$ remains controlled, but $U$ entries can (rarely) grow
+  - Studied since Wilkinson 1961 --- and still some today!
+- And pivoting increases memory movement
+  - Deferred updating helps with this
+  - But still not great in parallel
+:::
+
+## Beyond partial pivoting
+
+- For better stability, permute rows and columns
+  - Opens broader search for big elements
+  - Complete pivoting: Search entire Schur complement
+  - Rook pivoting: Search column $j$ and row $j$
+- More recent: *tournament pivoting*
+  - Choose $b$ pivot rows in one go
+  - Can improve both stability and performance!
+- Can also just use GEPP (or less) and clean up later...
+
+# Summary
+
+## LU factorization
+
+::: {.incremental}
+- Gaussian elimination $\equiv PA = LU$
+- Block perspective is good for performance
+  - Also good for algorithmic variants!
+- Schur complements are interesting on their own
+:::
+
+## Error and pivoting
+
+::: {.incremental}
+- $\hat{L} \hat{U} = A + E$ where $|E| \leq n \macheps |L| |U|$
+- Could have $|L| |U| \gg |A|$!
+- Partial solution from partial pivoting: $PA = LU$
+- Options beyond partial pivoting with different tradeoffs
+:::
