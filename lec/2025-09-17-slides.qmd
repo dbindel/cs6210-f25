@@ -1,0 +1,423 @@
+---
+title: "CS 6210: Matrix Computations"
+subtitle: LU, Cholesky, refinement, condest
+author: David Bindel
+date: 2025-09-17
+format:
+  revealjs:
+    embed-resources: true
+    code-annotations: below
+    html-math-method: mathjax
+    mermaid-format: svg
+---
+
+# Diagonal dominance
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+```{julia}
+#|echo: false
+#|output: false
+using Plots
+using LinearAlgebra
+using SparseArrays
+```
+
+## Recall GEPP
+
+Compute $PA = LU$, control $L$
+
+- Partial pivoting generally works (not always)
+- More elaborate pivoting may cost more
+- But maybe hypotheses on $A$ will help?
+
+## Diagonal dominance
+
+$A \in \bbR^{n \times n}$ is *(column) diagonally dominant* if
+$$
+  |a_{jj}| \geq \sum_{i \neq j} |a_{ij}|.
+$$
+
+- Strictly diagonally dominant if inequality strict
+- Strict diagonal dominance implies invertible
+- We will see this structure at various points later...
+
+So how does this connect to LU?
+
+## Schur complements
+
+Sanity check: what is the first Schur complement in
+$$A = \begin{bmatrix} \alpha & c^T \\ b & F \end{bmatrix}$$
+
+. . .
+
+Answer:
+$$S = F - \frac{bc^T}{\alpha}$$
+
+. . .
+
+Note: GEPP wouldn't pivot in SDD case, $|\alpha|$ is largest in col
+
+## SDD Schur complements
+
+$$
+A = \begin{bmatrix} \alpha & c^T \\ b & F \end{bmatrix}, \quad
+S = F - \frac{bc^T}{\alpha}
+$$
+
+$$\begin{aligned}
+|\alpha| & > \sum_{i} |b_i|, &
+|f_{jj}| & > \sum_{i \neq j} |f_{ij}| + |c_j|
+\end{aligned}$$
+
+Multiply first inequality by $|c_j|/|\alpha|$:
+$$\sum_i \frac{|b_i||c_j|}{|\alpha|} < |c_j|$$
+
+## SDD Schur complements
+
+$$
+A = \begin{bmatrix} \alpha & c^T \\ b & F \end{bmatrix}, \quad
+S = F - \frac{bc^T}{\alpha}
+$$
+
+$$\begin{aligned}
+|\alpha| & > \sum_{i} |b_i|, &
+|f_{jj}| & > \sum_{i \neq j} |f_{ij}| + |c_j|
+\end{aligned}$$
+
+Substitute:
+$$|f_{jj}|  >  \sum_{i \neq j} |f_{ij}| + \sum_i \frac{|b_i| |c_j|}{|\alpha|}$$
+
+## SDD Schur complements
+
+$$
+A = \begin{bmatrix} \alpha & c^T \\ b & F \end{bmatrix}, \quad
+S = F - \frac{bc^T}{\alpha}
+$$
+
+$$\begin{aligned}
+|\alpha| & > \sum_{i} |b_i|, &
+|f_{jj}| & > \sum_{i \neq j} |f_{ij}| + |c_j|
+\end{aligned}$$
+
+Subtract diagonal piece from last term:
+$$
+|f_{jj}| - \frac{|b_j| |c_j|}{|\alpha|} > 
+\sum_{i \neq j} \left( |f_{ij}| + \frac{|b_i| |c_j|}{|\alpha|} \right)
+$$
+
+## SDD Schur complements
+
+$$
+A = \begin{bmatrix} \alpha & c^T \\ b & F \end{bmatrix}, \quad
+S = F - \frac{bc^T}{\alpha}
+$$
+
+$$\begin{aligned}
+|\alpha| & > \sum_{i} |b_i|, &
+|f_{jj}| & > \sum_{i \neq j} |f_{ij}| + |c_j|
+\end{aligned}$$
+
+Triangle inequality:
+$$
+|s_{jj}| \geq
+|f_{jj}| - \frac{|b_j| |c_j|}{|\alpha|} > 
+\sum_{i \neq j} \left( |f_{ij}| + \frac{|b_i| |c_j|}{|\alpha|} \right)
+\geq
+\sum_{i \neq j} |s_{jj}|
+$$
+
+## SDD Schur complements
+
+$$
+A = \begin{bmatrix} \alpha & c^T \\ b & F \end{bmatrix}, \quad
+S = F - \frac{bc^T}{\alpha}
+$$
+
+$$\begin{aligned}
+|\alpha| & > \sum_{i} |b_i|, &
+|f_{jj}| & > \sum_{i \neq j} |f_{ij}| + |c_j|
+\end{aligned}$$
+
+Conclusion: Schur complement is also SDD:
+$$|s_{jj}| > \sum_{i \neq j} |s_{ij}|$$
+
+## SDD and GEPP
+
+Why is this relevant to Gaussian elimination?
+
+- Biggest element in each column is on the diagonal
+- And Schur complements remain strictly diag dominant
+- Therefore, GEPP does no pivoting on SDD matrices!
+
+What other matrices can we stably factor without pivoting?
+
+# Symmetry and Cholesky
+
+## Reminder: Quadratic forms
+
+Symmetric $A \in \bbR^{n \times n}$ represents a quadratic form
+$$
+  \phi(x) = x^T A x
+$$
+Characterize by *inertia* $\nu = (\nu_+, \nu_0, \nu_-)$.
+
+## Inertia and LU
+
+Suppose $A = LU$, and write
+$$
+  U = DM^T, \quad D = \operatorname{diag}(U).
+$$
+
+- Then $A = A^T = M(DL^T) = LU$ (because LU is unique)
+- Therefore $M = L$ and $A = LDL^T$
+- Inertia $\nu(D) = \nu(A)$ (just a change of basis!)
+
+But in general still need to pivot for stability.
+
+## Positive definiteness
+
+Positive definite if $\nu = (n, 0, 0)$, i.e.
+$$
+  \forall x \neq 0, \phi(x) > 0.
+$$
+
+- Notation: $A \succ 0$
+- $A = LL^T$ is *Cholesky factorization*
+- Also write as $A = R^T R$ where $R$ upper triangular
+
+## Fun facts!
+
+For $A \succ 0$:
+$$\begin{aligned}
+  A^{-1} &\succ 0 \\
+  A_{11} &\succ 0 \\
+  \kappa(A_{11}) &\leq \kappa(A) \\
+  S & \succ 0 \\
+  \kappa(S) & \leq \kappa(A)
+\end{aligned}$$
+where $A$ is block 2-by-2 and $S = A_{22} - A_{21} A_{11}^{-1} A_{12}$
+
+## Cholesky
+
+Partition $A$ into first row/column and rest.  Then:
+$$
+  \begin{bmatrix} a_{11} & a_{21}^T \\ a_{21} & A_{22} \end{bmatrix} =
+  \begin{bmatrix} l_{11} & 0 \\ l_{21} & L_{22} \end{bmatrix}
+  \begin{bmatrix} l_{11} & l_{21}^T \\ 0 & L_{22}^T \end{bmatrix}
+$$
+Recursively look at
+$$\begin{aligned}
+l_{11} &= \sqrt{a_{11}} \\
+l_{21} &= a_{21}/l_{21} \\
+L_{22} L_{22}^T &= A_{22} - l_{21} l_{21}^T
+\end{aligned}$$
+Q: Why no worries about validity of $\sqrt{\cdot}$?
+
+## Cholesky
+
+- Factorization exists iff $A$ is spd (why?)
+- Factorization is backward stable (without pivoting!)
+- Get straightforward bounds on elements of $L$
+
+## Cholesky
+
+Algorithm looks a lot like LU!
+```{.julia}
+function mychol!(A)
+    A = copy(A)
+    n = size(A)[1]
+    for j = 1:n
+        if A[j,j] < 0.0
+            error("Indefinite matrix")
+        end
+        A[j,j] = sqrt(A[j,j])
+        A[j+1:end,j] /= A[j,j]
+        A[j+1:end,j+1:end] -= A[j+1:end,j]*A[j+1:end,j]'
+    end
+    LowerTriangular(A)
+end
+```
+As with LU, we usually block for level 3 BLAS.
+
+# Iterative refinement
+
+## Slightly sloppy
+
+Suppose a slightly-sloppy solve:
+$$
+  \hat{A} \hat{x} = b, \quad \hat{A} = A + E
+$$
+where $\|E\| \leq \gamma \|A\|$ (think $\gamma \ll 1$, but not $O(\macheps)$).
+
+- Because of pivot growth in GEPP
+- Because of static or approximate pivoting
+- Because of a low-precision factorization
+
+Can we improve the solution?
+
+## Forward error and residual
+
+$$\begin{aligned}
+  (A + E) \hat{x} &= b \\
+  A x &= b \\\hline
+  A(\hat{x}-x) + E \hat{x} &= 0
+\end{aligned}$$
+
+Forward error $e = \hat{x}-x$ is given by
+$$\begin{aligned}
+  e &= -A^{-1} E \hat{x} \\
+    &= A^{-1} (b - A\hat{x})
+\end{aligned}$$
+Can compute $b-A \hat{x}$ up to roundoff...
+
+## Refinement
+
+Idea: Compute an (approximate) correction to $\hat{x}_1$:
+$$\begin{aligned}
+  \hat{x}_1 &= \hat{A}^{-1} b \\
+  \hat{x}_2 &= \hat{x}_1 + \hat{A}^{-1} (b-A \hat{x}_1)
+\end{aligned}$$
+Can repeat if needed (iterative refinement).
+
+## Analysis
+
+Iteration equation: $\hat{x}_{k+1} = \hat{x}_k + d_k$,
+$$
+  (A+E_k) d_k = b-A\hat{x}_k + f_k
+$$
+where
+$$\|E_{k+1}\| \leq \gamma \|A\|, \quad \|f_k\| \leq \phi
+$$
+
+## Analysis
+
+Iteration equation: $\hat{x}_{k+1} = \hat{x}_k + d_k$
+
+Goal: Get an iteration for the residual.
+
+. . .
+
+$$\begin{aligned}
+  && (A+E_k) d_k &= b-A\hat{x}_k + f_k \\
+  &\implies& (I+E_k A^{-1}) (r_{k+1}-r_k)  &= -r_k + f_k \\
+  &\implies& (I+E_k A^{-1}) r_{k+1} &= E_k A^{-1} r_k + f_k
+\end{aligned}$$
+
+## Analysis
+
+Goal: Get an iteration for $\|r_k\|$ from
+$$
+  (I+E_k A^{-1}) r_{k+1} = E_k A^{-1} r_k + f_k
+$$
+where
+$$\|E_{k+1}\| \leq \gamma \|A\|, \quad \|f_k\| \leq \phi$$
+Hint: Neumann bounds (assume $\kappa(A) \gamma < 1$)
+
+. . .
+
+$$
+  \|r_{k+1}\| \leq 
+  \frac{\kappa(A) \gamma \|r_k\| + \phi}{1-\kappa(A) \gamma}
+$$
+
+## Analysis
+
+Iteration is
+$$
+  \|r_{k+1}\| \leq \alpha \|r_k\| + \tilde{\phi}
+$$
+starting from $\|r_0\| = \|b\|$, where
+$$\begin{aligned}
+\alpha &= \frac{\kappa(A) \gamma}{1-\kappa(A) \gamma} \\
+\tilde{\phi} &= \frac{\phi}{1-\kappa(A) \gamma}
+\end{aligned}$$
+
+## Analysis
+
+Q: How to bound $\|r_k\|$ from recurrence?
+$$
+  \|r_{k+1}\| \leq \alpha \|r_k\| + \tilde{\phi}
+$$
+
+. . .
+
+Assuming $\alpha < 1$, can show by induction
+$$
+  \|r_k\| \leq \alpha^k \|b\| + \frac{\tilde{\phi}}{1-\alpha}.
+$$
+For $\alpha$ sufficiently less than one, residual is asymptotically
+determined by $\phi$.
+
+## Iterative refinement results
+
+For a good enough approximate solver (relative to $\kappa(A)$):
+
+- Iterative refinement improves solution cheaply
+- If all one precision, get backward stability
+- More generally, accuracy limited by accuracy of $b-A\hat{x}$
+
+# Condition estimation
+
+## Condition number quandry
+
+Consider
+$$\kappa_1(A) = \|A\|_1 \|A^{-1}\|_1$$
+
+- Easy to estimate $\|A\|_1$
+- How do we estimate $\|A^{-1}\|_1$?
+
+. . .
+
+Note: this is a convex optimization problem!
+$$
+\|A^{-1}\|_1 = \max_{\|x\|_1 \leq 1} \|A^{-1} x\|_1
+$$
+
+## Gradient relation
+
+Define $\xi_j = \operatorname{sign}(y_j)$.  Then
+$$
+  \|y\|_1 = \xi^T y
+$$
+and if $y$ has no nonzero components, $\xi$ is a gradient:
+$$
+  \delta\left( \|y\|_1 \right) = \xi^T \, \delta y.
+$$
+
+## Idea
+
+Predict using gradient:
+$$
+  \|A^{-1} x_{\mathrm{new}}\|_1 \approx \xi^T A^{-1} x_{\mathrm{new}}
+$$
+
+- Know $x_{\mathrm{new}}$ should only be some $e_j$
+- Best guess: $j = \operatorname{argmax}_j |z_j|$ where $z = A^{-T} \xi$
+
+This gives *Hager's estimator* (independently derived but equivalent
+to Boyd's $p$-norm power method).
+
+## Hager's estimator
+
+```{.julia}
+function hager(n, solveA, solveAT)
+    x = ones(n)/n
+    invA_normest = 0.0
+    while true
+        y = solveA(x)    # Evaluate y = A^-1 x
+        xi = sign.(y)    # and z = A^-T sign(y), the
+        z = solveAT(xi)  # subgradient of x -> |A^-1 x|_1
+        znorm, j = findmax(abs.(z))  # Next iterate
+        if znorm <= dot(z,x)         # Convergence check
+            return norm(y,1)
+        end
+        x[:] .= 0.0      # Update x to e_j and repeat
+        x[j] = 1.0
+    end
+    invA_normest
+end
+```
+Improved version (Higham 1988) in `LAPACK.gecon!`
