@@ -5,7 +5,20 @@ FIGS=   subnormal0.svg \
 	gshear.svg \
 	up-arrow-graph.svg \
 	dn-arrow-graph.svg \
-	nd-plot.svg
+	nd-plot.svg \
+	sgraph-A.svg \
+	sgraph-A-1.svg \
+	sgraph-A-2.svg \
+	sgraph-A-3.svg \
+	sgraph-A-4.svg \
+	sgraph-A-5.svg \
+	sgraph-A-6.svg \
+	sgraph-A-7.svg \
+	sgraph-A-8.svg \
+	sgraph-A-9.svg \
+	sgraph-A-10.svg \
+	sgraph-L.svg \
+	sgraph-LT.svg
 
 %.svg: out/%.xdv
 	dvisvgm $<
@@ -15,5 +28,8 @@ out/%.xdv: %.tex
 
 all: $(FIGS)
 
-subnormal0.svg subnormal1.svg: subnormal.jl
+subnormal0.tex subnormal1.tex: subnormal.jl
 	julia subnormal.jl
+
+sgraph-A.tex sgraph-L.tex sgraph-LT.tex sgraph-AL-fig.tex: demo-sparse.jl
+	julia demo-sparse.jl
