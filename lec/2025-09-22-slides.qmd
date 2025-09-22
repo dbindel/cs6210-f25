@@ -1,0 +1,607 @@
+---
+title: "CS 6210: Matrix Computations"
+subtitle: Sparse direct solvers
+author: David Bindel
+date: 2025-09-22
+format:
+  revealjs:
+    embed-resources: true
+    code-annotations: below
+    html-math-method: mathjax
+    mermaid-format: svg
+---
+
+# Introduction
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+```{julia}
+#|echo: false
+#|output: false
+using Plots
+using LinearAlgebra
+using SparseArrays
+```
+
+## Focus for today
+
+Goal: $A = R^T R$ ($R = L^T$) for sparse spd $A$
+
+- Symmetry is common and convenient
+- Don't need to pivot for stability
+- Many ideas carry over to LU
+
+## Two ways to (scalar) Cholesky
+
+$$\begin{bmatrix} A_{11} & A_{21}^T \\ A_{21} & A_{22} \end{bmatrix} =
+\begin{bmatrix} R_{11}^T & 0 \\ R_{12}^T & R_{22}^T \end{bmatrix}
+\begin{bmatrix} R_{11} & R_{12} \\ 0 & R_{22} \end{bmatrix}$$
+
+::: {.columns}
+
+::: {.column}
+Look: right/down
+
+- Think $A_{11}$ scalar
+- Compute row of $R$
+- Schur complement step
+- Factor Schur complement
+:::
+
+::: {.column}
+Look: left/up
+
+- Think $A_{22}$ scalar
+- Factor $A_{11}$ block
+- Compute $R_{12} = R_{11}^{-T} A_{12}$
+- $R_{22} = \sqrt{A_{22}-R_{12}^T R_{12}}$
+:::
+
+:::
+
+## Right and left
+
+- Same operations, just a different order (both $O(n^3)$ time)
+- Lectures mostly focused on *right-looking* versions
+- Get a useful perspective from left-looking, too!
+- Will try to explore both perspectives today
+
+# Band Cholesky
+
+## Band Cholesky in pictures {.smaller}
+
+$$
+\begin{bmatrix}
+  \times & \times & \times \\
+  \times & \times & \times & \times \\
+  \times & \times & \times & \times & \times \\
+  & \times & \times & \times & \times & \times \\  
+  & & \times & \times & \times & \times & \times \\
+  & & & \ddots & \ddots & \ddots & \ddots & \ddots \\
+  & & & & \times & \times & \times & \times & \times \\
+  & & & & & \times & \times & \times & \times \\
+  & & & & & & \times & \times & \times \\
+  \end{bmatrix}
+$$
+
+## Right-looking step 1 {.smaller}
+
+$$
+\begin{bmatrix}
+  {\color{red}*} & {\color{red}*} & {\color{red}*} \\
+  {\color{lightgray}0} & * & * & \times \\
+  {\color{lightgray}0} & * & * & \times & \times \\
+  & \times & \times & \times & \times & \times \\  
+  & & \times & \times & \times & \times & \times \\
+  & & & \ddots & \ddots & \ddots & \ddots & \ddots \\
+  & & & & \times & \times & \times & \times & \times \\
+  & & & & & \times & \times & \times & \times \\
+  & & & & & & \times & \times & \times \\
+  \end{bmatrix}
+$$
+
+## Right-looking step 2 {.smaller}
+
+$$
+\begin{bmatrix}
+  {\color{red}*} & {\color{red}*} & {\color{red}*} \\
+  {\color{lightgray}0} & {\color{red}*} & {\color{red}*} & {\color{red}*} \\
+  {\color{lightgray}0} & {\color{lightgray}0} & * & * & \times \\
+  & {\color{lightgray}0} & * & * & \times & \times \\  
+  & & \times & \times & \times & \times & \times \\
+  & & & \ddots & \ddots & \ddots & \ddots & \ddots \\
+  & & & & \times & \times & \times & \times & \times \\
+  & & & & & \times & \times & \times & \times \\
+  & & & & & & \times & \times & \times \\
+  \end{bmatrix}
+$$
+
+## Right-looking pattern
+
+- Start off with a pentadiagonal matrix
+- Schur complements *remain* pentadiagonal
+- Can use compact storage and shorten loops!
+
+## Compact storage
+
+Keep only the upper triangle:
+$$
+B = \begin{bmatrix}
+{\color{lightgray}\cdot}      & {\color{lightgray}\cdot}      & a_{13} & \ldots & a_{n-2,n} \\
+{\color{lightgray}\cdot}      & a_{12} & a_{23} & \ldots & a_{n-1,n} \\
+a_{11} & a_{22} & a_{33} & \ldots & a_{n,n}
+\end{bmatrix}
+$$
+Indexing convention: $b_{dj} = a_{j-m+d,j}$, $m = 1 + \mathrm{bw}$
+
+- Each column in $B$ represents a column in $A$
+- Each row in $B$ represents a diagonal in $A$
+
+```{julia}
+#|echo: false
+#|output: asis
+let
+    for k = 1:9
+        println("## Right-looking Cholesky (band storage)\n")
+        println("\$\$\\begin{bmatrix}")
+        m = 3
+        
+        function print_entry(d,j)
+            i = j-m+d
+            if i <= 0
+                print("{\\color{lightgray}\\cdot}")
+            elseif i <= k
+                print("{\\color{red}*}")
+            elseif j <= k+m-1
+                print("*")
+            else
+                print("\\times")
+            end
+        end
+        
+        for d = 1:3
+            print_entry(d,1)
+            for j = 2:9
+                print(" & ")
+                print_entry(d,j)
+            end
+            println("\\\\")
+        end
+        println("\\end{bmatrix}\$\$\n")
+    end
+end
+```
+
+```{julia}
+#|echo: false
+#|output: asis
+function schematic_ll(A, name)
+    n = size(A)[1]
+    for k = 1:n+1
+        function print_entry(i,j)
+            if A[i,j] != 0
+                if j < k
+                    if i <= j
+                        print("{\\color{red}*}")
+                    else
+                        print("{\\color{lightgray}0}")
+                    end
+                elseif j == k && i < k
+                    print("{\\color{blue}+}")
+                elseif j == k && i == k
+                    print("{\\color{blue}\\times}")
+                else
+                    print("\\times")
+                end
+            end
+        end
+        
+        println("## $name {.smaller}\n")
+        println("Key: \${\\color{red}*}\$ in \$L\$; \${\\color{blue}+}\$ is rhs for next solve\n")
+        
+        println("\$\$\\begin{bmatrix}")
+        for i = 1:n
+            print_entry(i,1)
+            for j = 2:n
+                print(" & ")
+                print_entry(i,j)
+            end
+            println("\\\\")
+        end
+        println("\\end{bmatrix}\$\$\n")
+    end
+end
+
+let
+    A = [1 1 1 0 0 0 0 0 0;
+         1 1 1 1 0 0 0 0 0;
+         1 1 1 1 1 0 0 0 0;
+         0 1 1 1 1 1 0 0 0;
+         0 0 1 1 1 1 1 0 0;
+         0 0 0 1 1 1 1 1 0;
+         0 0 0 0 1 1 1 1 1;
+         0 0 0 0 0 1 1 1 1;
+         0 0 0 0 0 0 1 1 1]
+    schematic_ll(A, "Left-looking band Cholesky")
+end
+```
+
+## Left-looking pattern
+
+To advance factorization from $k-1$ to $k$:
+
+- $R_{11}$ through col $k-1$ remains (upper) bandwidth $b=2$
+- Next col `A[1:k-1,k]` has only $b$ nonzeros at end
+- Forward substitution on $R_{11}^T$ retains structure in $r_{12}$
+- Therefore through col $k$ remains (upper) bandwidth $b$
+
+```{julia}
+#|echo: false
+#|output: asis
+let
+    for k = 1:9
+        println("## Left-looking Cholesky (band storage)\n")
+        println("\$\$\\begin{bmatrix}")
+        m = 3
+        
+        function print_entry(d,j)
+            i = j-m+d
+            if i <= 0
+                print("{\\color{lightgray}\\cdot}")
+            elseif j <= k
+                print("{\\color{red}*}")
+            elseif j == k+1 && d < m
+                print("{\\color{blue}+}")
+            elseif j == k+1 && d == m
+                print("{\\color{blue}\\times}")                
+            else
+                print("\\times")
+            end
+        end
+        
+        for d = 1:3
+            print_entry(d,1)
+            for j = 2:9
+                print(" & ")
+                print_entry(d,j)
+            end
+            println("\\\\")
+        end
+        println("\\end{bmatrix}\$\$\n")
+    end
+end
+```
+
+## Beyond fixed bandwidth
+
+- If $a_{12}^T$ is zero through entry $k$, so is $R^{-T} a_{12}^T$
+- Doesn't have to be associated with a fixed bandwidth!
+- Variable bandwidth sometimes called *skyline* format
+
+```{julia}
+#|echo: false
+#|output: asis
+let
+    A = [1 1 1 0 0 0 0 0 1;
+         1 1 1 0 0 0 0 0 1;
+         1 1 1 1 1 0 0 0 1;
+         0 0 1 1 1 1 0 0 1;
+         0 0 1 1 1 1 1 0 1;
+         0 0 0 1 1 1 1 1 1;
+         0 0 0 0 1 1 1 1 1;
+         0 0 0 0 0 1 1 1 1;
+         1 1 1 1 1 1 1 1 1]
+    schematic_ll(A, "Skyline solver")
+end
+```
+
+# General sparse Cholesky
+
+## Reminder
+
+*Graph* of $A = A^T \in \mathbb{R}^{n \times n}$ has
+
+- Nodes $\{1, \ldots, n\}$
+- Edges $(i,j) \in \mathcal{E}$ if $a_{ij} \neq 0$
+
+Associate with $R$ a directed graph
+
+- Edges $i \rightarrow j$ if $r_{ij} \neq 0$
+- Say $r_{ij} \neq 0$ is a *fill element* if $a_{ij} = 0$
+
+## Arrow matrices {.smaller}
+
+::: {.columns}
+
+::: {.column width=70%}
+![](_fig/up-arrow-graph.svg){.nostretch width="100%"}
+:::
+
+::: {.column width=30%}
+$$\begin{bmatrix}
+\times & \times & \times & \times & \times \\
+\times & \times & & & \\
+\times & & \times & & \\
+\times & & & \times & \\
+\times & & & & \times
+\end{bmatrix}$$
+:::
+
+::: {.column width=70%}
+![](_fig/dn-arrow-graph.svg){.nostretch width="100%"}
+:::
+
+::: {.column width=30%}
+$$\begin{bmatrix}
+\times & & & & \times \\
+& \times & & & \times \\
+& & \times & & \times \\
+& & & \times & \times \\
+\times & \times & \times & \times & \times
+\end{bmatrix}$$
+:::
+
+:::
+
+## Arrow matrices and fill {.smaller}
+
+::: {.columns}
+
+::: {.column width=70%}
+![](_fig/up-arrow-graph-fill.svg){.nostretch width="100%"}
+:::
+
+::: {.column width=30%}
+$$\begin{bmatrix}
+\times & \times & \times & \times & \times \\
+{\color{lightgray}0} & \times & {\color{red}*} & {\color{red}*} & {\color{red}*} \\
+{\color{lightgray}0} & & \times & {\color{red}*} & {\color{red}*} \\
+{\color{lightgray}0} & & & \times & {\color{red}*} \\
+{\color{lightgray}0} & & & & \times
+\end{bmatrix}$$
+:::
+
+::: {.column width=70%}
+![](_fig/dn-arrow-graph.svg){.nostretch width="100%"}
+:::
+
+::: {.column width=30%}
+$$\begin{bmatrix}
+\times & & & & \times \\
+& \times & & & \times \\
+& & \times & & \times \\
+& & & \times & \times \\
+{\color{\lightgray}0} &
+{\color{\lightgray}0} &
+{\color{\lightgray}0} &
+{\color{\lightgray}0} & \times
+\end{bmatrix}$$
+:::
+
+:::
+
+## Cholesky and graphs
+
+Consider a more interesting example:
+
+- Plot sparsity pattern of $R^T + R$ or $A$ during elimination
+- Assuming a right-looking Cholesky algorithm
+
+## Cholesky and graphs
+
+![](_fig/sgraph-A.svg){fig-align="center"}
+
+```{julia}
+#|echo: false
+#|output: asis
+
+let
+    for j=1:14
+        println("## Cholesky and graphs\n")
+        println("![](_fig/sgraph-A-$j.svg){fig-align=\"center\"}\n")
+    end
+end
+```
+
+## Cholesky and graphs
+
+![](_fig/sgraph-L.svg){fig-align="center"}
+
+## Left-looking perspective
+
+- What about left-looking perspective?
+- Key Q: what is sparsity of $R_{11}^{T} a_{12}$?
+
+## Triangular solve
+
+Consider $x = R^{-T} b$ (used in left-looking Cholesky):
+$$
+  x_i = \left( b_i - \sum_{j < i} r_{ji} x_j \right)/r_{ii}
+$$
+
+- If $b_i \neq 0$, then $x_i \neq 0$
+- $x_j \neq 0$ whenever $r_{ji} \neq 0$ and $x_i \neq 0$
+- More generally, $x_j \neq 0$ with a directed path $i$ to $j$
+
+## Fill
+
+Two perspectives:
+
+- Right-looking: When we eliminate $k$, we connect all its neighbors
+  with index $> k$ into a clique in the Schur complement
+- Left-looking: $r_{ij} \neq 0$ iff there is an undirected path from
+  $i$ to $j$ that only passes through nodes with index $p < \min(i,j)$
+
+Either way, **order matters!**
+
+## Symbolic factorization
+
+- *Symbolic factorization* computes structure of $R$
+- Left-looking perspective: build graphs $\mathcal{G}_k$ on $\{1,\ldots,k\}$
+- Can have $r_{jk} \neq 0$ iff
+  - There is some $a_{ik} \neq 0$
+  - Such that there is a path $i$ to $k$ through $\mathcal{G}_{k-1}$
+  - NB: May have many such paths
+- This is fundamentally about *reachability* analysis
+
+## Reachability
+
+- Want to know if there is a path from $i$ to $j$ through
+  $\mathcal{G}_k$
+- Sufficient: path from $i$ to $j$ through a *spanning tree*
+- Depth-first search yields nested spanning trees on $\mathcal{G}_k$
+- Can build the *elimination tree* in about $O(\mathrm{nnz}(A))$ time
+
+## Elimination tree
+
+![](_fig/sgraph-LT.svg){fig-align="center"}
+
+## Elimination tree
+
+With the elimination tree, we can:
+
+- Determine fill: $r_{ij} \neq 0$ if etree path $i$ to $j$ to $k$ with
+  $a_{ik} \neq 0$
+- Identify *supernodes* (columns with similar fill)
+  - These allow level-3 BLAS ops during elimination
+- Find parallelism: Independently eliminate disjoint subtrees
+
+For more details: Davis, [*Direct Methods for Sparse Linear Systems*](https://epubs.siam.org/doi/book/10.1137/1.9780898718881),
+SIAM 2006
+
+# Nested dissection
+
+## Fill and order
+
+- Fill is very sensitive to elimination order
+- *Optimal* fill-reducing order is NP-hard
+- But there are good heuristics!
+
+## Trees
+
+::: {.columns}
+
+::: {.column width=70%}
+![](_fig/dn-arrow-graph.svg){.nostretch width="100%"}
+:::
+
+::: {.column width=30%}
+$$\begin{bmatrix}
+\times & & & & \times \\
+& \times & & & \times \\
+& & \times & & \times \\
+& & & \times & \times \\
+\times & \times & \times & \times & \times
+\end{bmatrix}$$
+:::
+
+:::
+
+*No fill* for trees eliminated in post order!
+
+## Not-quite-trees
+
+![](_fig/nd-plot0.svg){.nostretch width="50%" fig-align="center"}
+
+## Not-quite-trees
+
+![](_fig/nd-plot.svg){.nostretch width="57%" fig-align="center"}
+
+## Not-quite-trees {.smaller}
+
+::: {.columns}
+
+::: {.column width="40%"}
+![](_fig/nd-plot.svg){.nostretch width="90%" fig-align="center"}
+:::
+
+::: {.column width="60%"}
+$$
+  S =
+  \begin{bmatrix}
+    S_{AA} &        & {\color[rgb]{0,0,1}S_{AC}}
+    &      &        &       & {\color[rgb]{1,0,0}S_{AG}} \\
+    & S_{BB} & {\color[rgb]{0,0,1}S_{BC}}
+    &      &        &       & {\color[rgb]{1,0,0}S_{BG}} \\
+    {\color[rgb]{0,0,1}S_{CA}} & {\color[rgb]{0,0,1}S_{CB}} &
+{\color[rgb]{0,0,1} S_{CC}} &       &        &       &
+{\color[rgb]{1,0,0}S_{CG}} \\
+           &       &       & S_{DD} &        &
+{\color[rgb]{0,0,1}S_{DF}} & {\color[rgb]{1,0,0}S_{DG}} \\
+           &       &       &       & S_{EE} &
+{\color[rgb]{0,0,1}S_{EF}} & {\color[rgb]{1,0,0}S_{EG}} \\
+           &       &       & {\color[rgb]{0,0,1}S_{FD}}
+& {\color[rgb]{0,0,1}S_{FE}} & {\color[rgb]{0,0,1}S_{FF}} &
+{\color[rgb]{1,0,0}S_{FG}} \\
+    {\color[rgb]{1,0,0}S_{GA}} & {\color[rgb]{1,0,0}S_{GB}} &
+{\color[rgb]{1,0,0}S_{GC}} & {\color[rgb]{1,0,0}S_{GD}} &
+{\color[rgb]{1,0,0}S_{GE}} & {\color[rgb]{1,0,0}S_{GF}} &
+{\color[rgb]{1,0,0}S_{GG}}
+  \end{bmatrix}
+$$
+:::
+
+:::
+
+## Nested dissection
+
+- Find small *separator* to partition the graph
+- Order so that separator comes last
+- Apply idea recursively
+
+## Cost estimate
+
+In 2D:
+
+- About $2n^3/3$ flops for an $n$-by-$n$ separator system
+- Then have $2(n/2)^3/3$ separators at next level, etc
+
+Recurse:
+$$
+  \frac{5}{6} n^3 \left( 1 + \frac{1}{2} + \frac{1}{4} + \ldots \right)
+  \approx \frac{5}{3}n^3.
+$$
+Or $O(N^{3/2})$ time (and about $O(N \log N)$ fill).
+
+## Cost estimate
+
+Q: 3D scaling is worse.  Why?
+
+# Summary
+
+## Dense vs sparse
+
+What we like:
+
+- Dense: great for memory access patterns
+- Sparse: better arithmetic complexity
+
+Switch-over when $\mbox{nnz}(A)/n^2 \ll 1$.
+
+## Band solvers
+
+- Hard to beat when your matrix is banded!
+- Can use level 3 BLAS for larger bandwidths
+- Can also extend to skyline solvers
+
+## General sparse solvers
+
+- Hard to beat sparse direct solvers for 2D-ish problems!
+  - 1D-looking problems are even better
+  - 3D problems and social networks are harder
+- Lots of clever ideas go into
+  - Choosing fill-reducing ordering
+  - Finding level-3 BLAS opportunities
+  - Finding opportunities for parallelism
+- Good options: SuperLU, SuiteSparse (Julia, MATLAB, Python)
+
+## Nonsymmetric case
+
+- Symbolically determine permutations for fill reduction
+- Numerical factorization: partial pivoting?
+  - But this can destroy fill reduction!
+- Balancing acts
+  - Restricted pivoting trades off stability vs fill
+  - Can use *static pivoting* + iterative refinement

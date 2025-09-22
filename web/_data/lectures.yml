@@ -73,6 +73,10 @@
 -
   date: 2025-09-22
   info: Sparse direct solvers
+  notes: 2025-09-22.html
+  ulinks:
+    - info: slides
+      url: lec/2025-09-22-slides.html
   hw:
     - info: HW 4 (due 9/29)
 -

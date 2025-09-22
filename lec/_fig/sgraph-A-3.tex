@@ -2,34 +2,61 @@
 \begin{document}
 \begin{tikzpicture}
 
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=black!20, text=black!50] (n1) at (0.0,0.0) {1};
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=black!20, text=black!50] (n2) at (1.0,0.0) {2};
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=black!20, text=black!50] (n3) at (2.0,0.0) {3};
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n4) at (2.0,1.0) {4};
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n5) at (0.0,1.0) {5};
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n6) at (0.0,2.0) {6};
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n7) at (2.0,2.0) {7};
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n8) at (4.0,1.0) {8};
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n9) at (4.0,2.0) {9};
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n10) at (1.0,3.0) {10};
-\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n11) at (3.0,3.0) {11};
-\draw[thick,black!20,->] (n1) -- (n2);
-\draw[thick,black!20,->] (n1) -- (n5);
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=black!20, text=black!50] (n1) at (3.0,4.0) {1};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=black!20, text=black!50] (n2) at (0.0,0.0) {2};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=black!20, text=black!50] (n3) at (1.0,0.0) {3};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n4) at (2.0,0.0) {4};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n5) at (2.0,1.0) {5};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n6) at (0.0,1.0) {6};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n7) at (4.0,0.0) {7};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n8) at (5.0,0.0) {8};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n9) at (4.0,1.0) {9};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n10) at (5.0,1.0) {10};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n11) at (0.0,2.0) {11};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n12) at (2.0,2.0) {12};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n13) at (4.0,2.0) {13};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n14) at (2.0,3.0) {14};
+\node[shape=rectangle, rounded corners, draw, align=center, top color=white, bottom color=blue!20] (n15) at (4.0,3.0) {15};
+\draw[thick,black!20,->] (n1) -- (n14);
+\draw[thick,black!20,->] (n1) -- (n15);
 \draw[thick,black!20,->] (n2) -- (n3);
-\draw[thick,black!20,dashed,->] (n2) -- (n5);
+\draw[thick,black!20,->] (n2) -- (n6);
 \draw[thick,black!20,->] (n3) -- (n4);
-\draw[thick,black!20,dashed,->] (n3) -- (n5);
+\draw[thick,black!20,dashed,->] (n3) -- (n6);
 \draw[ultra thick] (n4) -- (n5);
+\draw[ultra thick,red,dashed] (n4) -- (n6);
 \draw[ultra thick] (n5) -- (n6);
-\draw[ultra thick] (n5) -- (n7);
-\draw[ultra thick] (n6) -- (n7);
-\draw[ultra thick] (n6) -- (n10);
+\draw[ultra thick] (n5) -- (n12);
+\draw[ultra thick] (n6) -- (n11);
+\draw[ultra thick] (n7) -- (n8);
 \draw[ultra thick] (n7) -- (n9);
-\draw[ultra thick] (n7) -- (n10);
-\draw[ultra thick] (n7) -- (n11);
-\draw[ultra thick] (n8) -- (n9);
-\draw[ultra thick] (n9) -- (n11);
-\draw[ultra thick] (n10) -- (n11);
+\draw[ultra thick] (n8) -- (n10);
+\draw[ultra thick] (n9) -- (n10);
+\draw[ultra thick] (n9) -- (n13);
+\draw[ultra thick] (n10) -- (n13);
+\draw[ultra thick] (n11) -- (n12);
+\draw[ultra thick] (n11) -- (n14);
+\draw[ultra thick] (n12) -- (n13);
+\draw[ultra thick] (n12) -- (n14);
+\draw[ultra thick] (n13) -- (n15);
+\draw[ultra thick,red,dashed] (n14) -- (n15);
+\matrix[draw,anchor=south west,column sep=-4pt,row sep=-4pt] at (6.0,-0.2) {
+\node{{\color{black!40}$\bullet$}}; &  &  &  &  &  &  &  &  &  &  &  &  & \node{{\color{black!40}$\bullet$}}; & \node{{\color{black!40}$\bullet$}};\\
+ & \node{{\color{black!40}$\bullet$}}; & \node{{\color{black!40}$\bullet$}}; &  &  & \node{{\color{black!40}$\bullet$}}; &  &  &  &  &  &  &  &  & \\
+ & \node{{\color{black!40}$\bullet$}}; & \node{{\color{black!40}$\bullet$}}; & \node{{\color{black!40}$\bullet$}}; &  & \node{{\color{red!40}$\circ$}}; &  &  &  &  &  &  &  &  & \\
+ &  & \node{{\color{black!40}$\bullet$}}; & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; & \node{{\color{red}$\circ$}}; &  &  &  &  &  &  &  &  & \\
+ &  &  & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; &  &  &  &  &  & \node{{\color{black}$\bullet$}}; &  &  & \\
+ & \node{{\color{black!40}$\bullet$}}; & \node{{\color{red!40}$\circ$}}; & \node{{\color{red}$\circ$}}; & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; &  &  &  &  & \node{{\color{black}$\bullet$}}; &  &  &  & \\
+ &  &  &  &  &  & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; &  &  &  &  &  & \\
+ &  &  &  &  &  & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; &  & \node{{\color{black}$\bullet$}}; &  &  &  &  & \\
+ &  &  &  &  &  & \node{{\color{black}$\bullet$}}; &  & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; &  &  & \node{{\color{black}$\bullet$}}; &  & \\
+ &  &  &  &  &  &  & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; &  &  & \node{{\color{black}$\bullet$}}; &  & \\
+ &  &  &  &  & \node{{\color{black}$\bullet$}}; &  &  &  &  & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; &  & \node{{\color{black}$\bullet$}}; & \\
+ &  &  &  & \node{{\color{black}$\bullet$}}; &  &  &  &  &  & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; & \\
+ &  &  &  &  &  &  &  & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; &  & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; &  & \node{{\color{black}$\bullet$}};\\
+\node{{\color{black!40}$\bullet$}}; &  &  &  &  &  &  &  &  &  & \node{{\color{black}$\bullet$}}; & \node{{\color{black}$\bullet$}}; &  & \node{{\color{black}$\bullet$}}; & \node{{\color{red}$\circ$}};\\
+\node{{\color{black!40}$\bullet$}}; &  &  &  &  &  &  &  &  &  &  &  & \node{{\color{black}$\bullet$}}; & \node{{\color{red}$\circ$}}; & \node{{\color{black}$\bullet$}};\\
+};
 \end{tikzpicture}
 \end{document}
 

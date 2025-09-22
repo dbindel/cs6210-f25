@@ -231,15 +231,15 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g clip-path='url(#pgfcp9)'>
 <g transform='matrix(1,0,0,1,142.2637,0.0)'>
 <g transform='matrix(0.23247,0,0,0.26993,0.0,0.0)'>
-<linearGradient gradientTransform='rotate(90)' id='pgfsh10'>
- <stop offset='0.0' stop-color=' #ccf '/>
- <stop offset='0.25' stop-color=' #ccf '/>
- <stop offset='0.5' stop-color=' #e6e6ff '/>
+<linearGradient gradientTransform='rotate(90)' id='pgfsh2'>
+ <stop offset='0.0' stop-color=' #ccc '/>
+ <stop offset='0.25' stop-color=' #ccc '/>
+ <stop offset='0.5' stop-color=' #e6e6e6 '/>
  <stop offset='0.75' stop-color=' #fff '/>
  <stop offset='1.0' stop-color=' #fff '/>
  </linearGradient>
 <g transform='translate(-50.1875,-50.1875)'>
-<rect height='100.375' style='fill:url(#pgfsh10); stroke:none' width='100.375'/>
+<rect height='100.375' style='fill:url(#pgfsh2); stroke:none' width='100.375'/>
 </g>
 </g>
 </g>
@@ -247,27 +247,27 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <path d='M144.0967 6.77296H140.43074C138.22157 6.77296 136.43074 4.98213 136.43074 2.77296V-2.77296C136.43074-4.98213 138.22157-6.77296 140.43074-6.77296H144.0967C146.30586-6.77296 148.0967-4.98213 148.0967-2.77296V2.77296C148.0967 4.98213 146.30586 6.77296 144.0967 6.77296ZM136.43074-6.77296' fill='none'/>
 <g transform='translate(139.76372,-3.22002)'>
 <g stroke='none' transform='scale(-1.00375,1.00375)translate(-63.498909,48.223109)scale(-1,-1)'>
-<g fill='#000'>
+<g fill='#808080'>
 <g stroke='none'>
-<text class='f0' x='-63.498909' y='48.223109'>8</text>
+<text class='f0' x='-63.498909' y='48.223109'><tspan fill='#808080'>8</tspan></text>
 </g>
 </g>
 </g>
 </g>
-<clipPath id='pgfcp11'>
+<clipPath id='pgfcp10'>
 <path d='M115.64395 35.22571H111.978C109.76883 35.22571 107.978 33.43488 107.978 31.22571V25.67978C107.978 23.47061 109.76883 21.67978 111.978 21.67978H115.64395C117.85312 21.67978 119.64395 23.47061 119.64395 25.67978V31.22571C119.64395 33.43488 117.85312 35.22571 115.64395 35.22571ZM107.978 21.67978'/> </clipPath>
-<g clip-path='url(#pgfcp11)'>
+<g clip-path='url(#pgfcp10)'>
 <g transform='matrix(1,0,0,1,113.81097,28.45274)'>
 <g transform='matrix(0.23247,0,0,0.26993,0.0,0.0)'>
-<linearGradient gradientTransform='rotate(90)' id='pgfsh10'>
- <stop offset='0.0' stop-color=' #ccf '/>
- <stop offset='0.25' stop-color=' #ccf '/>
- <stop offset='0.5' stop-color=' #e6e6ff '/>
+<linearGradient gradientTransform='rotate(90)' id='pgfsh2'>
+ <stop offset='0.0' stop-color=' #ccc '/>
+ <stop offset='0.25' stop-color=' #ccc '/>
+ <stop offset='0.5' stop-color=' #e6e6e6 '/>
  <stop offset='0.75' stop-color=' #fff '/>
  <stop offset='1.0' stop-color=' #fff '/>
  </linearGradient>
 <g transform='translate(-50.1875,-50.1875)'>
-<rect height='100.375' style='fill:url(#pgfsh10); stroke:none' width='100.375'/>
+<rect height='100.375' style='fill:url(#pgfsh2); stroke:none' width='100.375'/>
 </g>
 </g>
 </g>
@@ -275,27 +275,27 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <path d='M115.64395 35.22571H111.978C109.76883 35.22571 107.978 33.43488 107.978 31.22571V25.67978C107.978 23.47061 109.76883 21.67978 111.978 21.67978H115.64395C117.85312 21.67978 119.64395 23.47061 119.64395 25.67978V31.22571C119.64395 33.43488 117.85312 35.22571 115.64395 35.22571ZM107.978 21.67978' fill='none'/>
 <g transform='translate(111.31097,25.23273)'>
 <g stroke='none' transform='scale(-1.00375,1.00375)translate(-63.498909,48.223109)scale(-1,-1)'>
-<g fill='#000'>
+<g fill='#808080'>
 <g stroke='none'>
-<text class='f0' x='-63.498909' y='48.223109'>9</text>
+<text class='f0' x='-63.498909' y='48.223109'><tspan fill='#808080'>9</tspan></text>
 </g>
 </g>
 </g>
 </g>
-<clipPath id='pgfcp12'>
+<clipPath id='pgfcp11'>
 <path d='M146.5967 35.22571H137.93074C135.72157 35.22571 133.93074 33.43488 133.93074 31.22571V25.67978C133.93074 23.47061 135.72157 21.67978 137.93074 21.67978H146.5967C148.80586 21.67978 150.5967 23.47061 150.5967 25.67978V31.22571C150.5967 33.43488 148.80586 35.22571 146.5967 35.22571ZM133.93074 21.67978'/> </clipPath>
-<g clip-path='url(#pgfcp12)'>
+<g clip-path='url(#pgfcp11)'>
 <g transform='matrix(1,0,0,1,142.2637,28.45274)'>
 <g transform='matrix(0.3321,0,0,0.26993,0.0,0.0)'>
-<linearGradient gradientTransform='rotate(90)' id='pgfsh10'>
- <stop offset='0.0' stop-color=' #ccf '/>
- <stop offset='0.25' stop-color=' #ccf '/>
- <stop offset='0.5' stop-color=' #e6e6ff '/>
+<linearGradient gradientTransform='rotate(90)' id='pgfsh2'>
+ <stop offset='0.0' stop-color=' #ccc '/>
+ <stop offset='0.25' stop-color=' #ccc '/>
+ <stop offset='0.5' stop-color=' #e6e6e6 '/>
  <stop offset='0.75' stop-color=' #fff '/>
  <stop offset='1.0' stop-color=' #fff '/>
  </linearGradient>
 <g transform='translate(-50.1875,-50.1875)'>
-<rect height='100.375' style='fill:url(#pgfsh10); stroke:none' width='100.375'/>
+<rect height='100.375' style='fill:url(#pgfsh2); stroke:none' width='100.375'/>
 </g>
 </g>
 </g>
@@ -303,27 +303,27 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <path d='M146.5967 35.22571H137.93074C135.72157 35.22571 133.93074 33.43488 133.93074 31.22571V25.67978C133.93074 23.47061 135.72157 21.67978 137.93074 21.67978H146.5967C148.80586 21.67978 150.5967 23.47061 150.5967 25.67978V31.22571C150.5967 33.43488 148.80586 35.22571 146.5967 35.22571ZM133.93074 21.67978' fill='none'/>
 <g transform='translate(137.26372,25.23273)'>
 <g stroke='none' transform='scale(-1.00375,1.00375)translate(-63.498909,48.223109)scale(-1,-1)'>
-<g fill='#000'>
+<g fill='#808080'>
 <g stroke='none'>
-<text class='f0' x='-63.498909' y='48.223109'>10</text>
+<text class='f0' x='-63.498909' y='48.223109'><tspan fill='#808080'>10</tspan></text>
 </g>
 </g>
 </g>
 </g>
-<clipPath id='pgfcp13'>
+<clipPath id='pgfcp12'>
 <path d='M4.33298 63.56847H-4.33298C-6.54214 63.56847-8.33298 61.77763-8.33298 59.56847V54.24251C-8.33298 52.03334-6.54214 50.24251-4.33298 50.24251H4.33298C6.54214 50.24251 8.33298 52.03334 8.33298 54.24251V59.56847C8.33298 61.77763 6.54214 63.56847 4.33298 63.56847ZM-8.33298 50.24251'/> </clipPath>
-<g clip-path='url(#pgfcp13)'>
+<g clip-path='url(#pgfcp12)'>
 <g transform='matrix(1,0,0,1,0.0,56.90547)'>
 <g transform='matrix(0.3321,0,0,0.26555,0.0,0.0)'>
-<linearGradient gradientTransform='rotate(90)' id='pgfsh10'>
- <stop offset='0.0' stop-color=' #ccf '/>
- <stop offset='0.25' stop-color=' #ccf '/>
- <stop offset='0.5' stop-color=' #e6e6ff '/>
+<linearGradient gradientTransform='rotate(90)' id='pgfsh2'>
+ <stop offset='0.0' stop-color=' #ccc '/>
+ <stop offset='0.25' stop-color=' #ccc '/>
+ <stop offset='0.5' stop-color=' #e6e6e6 '/>
  <stop offset='0.75' stop-color=' #fff '/>
  <stop offset='1.0' stop-color=' #fff '/>
  </linearGradient>
 <g transform='translate(-50.1875,-50.1875)'>
-<rect height='100.375' style='fill:url(#pgfsh10); stroke:none' width='100.375'/>
+<rect height='100.375' style='fill:url(#pgfsh2); stroke:none' width='100.375'/>
 </g>
 </g>
 </g>
@@ -331,27 +331,27 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <path d='M4.33298 63.56847H-4.33298C-6.54214 63.56847-8.33298 61.77763-8.33298 59.56847V54.24251C-8.33298 52.03334-6.54214 50.24251-4.33298 50.24251H4.33298C6.54214 50.24251 8.33298 52.03334 8.33298 54.24251V59.56847C8.33298 61.77763 6.54214 63.56847 4.33298 63.56847ZM-8.33298 50.24251' fill='none'/>
 <g transform='translate(-5.0,53.57549)'>
 <g stroke='none' transform='scale(-1.00375,1.00375)translate(-63.498909,48.223109)scale(-1,-1)'>
-<g fill='#000'>
+<g fill='#808080'>
 <g stroke='none'>
-<text class='f0' x='-63.498909' y='48.223109'>11</text>
+<text class='f0' x='-63.498909' y='48.223109'><tspan fill='#808080'>11</tspan></text>
 </g>
 </g>
 </g>
 </g>
-<clipPath id='pgfcp14'>
+<clipPath id='pgfcp13'>
 <path d='M61.23846 63.56847H52.57251C50.36334 63.56847 48.57251 61.77763 48.57251 59.56847V54.24251C48.57251 52.03334 50.36334 50.24251 52.57251 50.24251H61.23846C63.44763 50.24251 65.23846 52.03334 65.23846 54.24251V59.56847C65.23846 61.77763 63.44763 63.56847 61.23846 63.56847ZM48.57251 50.24251'/> </clipPath>
-<g clip-path='url(#pgfcp14)'>
+<g clip-path='url(#pgfcp13)'>
 <g transform='matrix(1,0,0,1,56.90549,56.90547)'>
 <g transform='matrix(0.3321,0,0,0.26555,0.0,0.0)'>
-<linearGradient gradientTransform='rotate(90)' id='pgfsh10'>
- <stop offset='0.0' stop-color=' #ccf '/>
- <stop offset='0.25' stop-color=' #ccf '/>
- <stop offset='0.5' stop-color=' #e6e6ff '/>
+<linearGradient gradientTransform='rotate(90)' id='pgfsh2'>
+ <stop offset='0.0' stop-color=' #ccc '/>
+ <stop offset='0.25' stop-color=' #ccc '/>
+ <stop offset='0.5' stop-color=' #e6e6e6 '/>
  <stop offset='0.75' stop-color=' #fff '/>
  <stop offset='1.0' stop-color=' #fff '/>
  </linearGradient>
 <g transform='translate(-50.1875,-50.1875)'>
-<rect height='100.375' style='fill:url(#pgfsh10); stroke:none' width='100.375'/>
+<rect height='100.375' style='fill:url(#pgfsh2); stroke:none' width='100.375'/>
 </g>
 </g>
 </g>
@@ -359,27 +359,27 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <path d='M61.23846 63.56847H52.57251C50.36334 63.56847 48.57251 61.77763 48.57251 59.56847V54.24251C48.57251 52.03334 50.36334 50.24251 52.57251 50.24251H61.23846C63.44763 50.24251 65.23846 52.03334 65.23846 54.24251V59.56847C65.23846 61.77763 63.44763 63.56847 61.23846 63.56847ZM48.57251 50.24251' fill='none'/>
 <g transform='translate(51.90549,53.57549)'>
 <g stroke='none' transform='scale(-1.00375,1.00375)translate(-63.498909,48.223109)scale(-1,-1)'>
-<g fill='#000'>
+<g fill='#808080'>
 <g stroke='none'>
-<text class='f0' x='-63.498909' y='48.223109'>12</text>
+<text class='f0' x='-63.498909' y='48.223109'><tspan fill='#808080'>12</tspan></text>
 </g>
 </g>
 </g>
 </g>
-<clipPath id='pgfcp15'>
+<clipPath id='pgfcp14'>
 <path d='M118.14395 63.67845H109.478C107.26883 63.67845 105.478 61.88762 105.478 59.67845V54.13252C105.478 51.92336 107.26883 50.13252 109.478 50.13252H118.14395C120.35312 50.13252 122.14395 51.92336 122.14395 54.13252V59.67845C122.14395 61.88762 120.35312 63.67845 118.14395 63.67845ZM105.478 50.13252'/> </clipPath>
-<g clip-path='url(#pgfcp15)'>
+<g clip-path='url(#pgfcp14)'>
 <g transform='matrix(1,0,0,1,113.81097,56.90547)'>
 <g transform='matrix(0.3321,0,0,0.26993,0.0,0.0)'>
-<linearGradient gradientTransform='rotate(90)' id='pgfsh10'>
- <stop offset='0.0' stop-color=' #ccf '/>
- <stop offset='0.25' stop-color=' #ccf '/>
- <stop offset='0.5' stop-color=' #e6e6ff '/>
+<linearGradient gradientTransform='rotate(90)' id='pgfsh2'>
+ <stop offset='0.0' stop-color=' #ccc '/>
+ <stop offset='0.25' stop-color=' #ccc '/>
+ <stop offset='0.5' stop-color=' #e6e6e6 '/>
  <stop offset='0.75' stop-color=' #fff '/>
  <stop offset='1.0' stop-color=' #fff '/>
  </linearGradient>
 <g transform='translate(-50.1875,-50.1875)'>
-<rect height='100.375' style='fill:url(#pgfsh10); stroke:none' width='100.375'/>
+<rect height='100.375' style='fill:url(#pgfsh2); stroke:none' width='100.375'/>
 </g>
 </g>
 </g>
@@ -387,27 +387,27 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <path d='M118.14395 63.67845H109.478C107.26883 63.67845 105.478 61.88762 105.478 59.67845V54.13252C105.478 51.92336 107.26883 50.13252 109.478 50.13252H118.14395C120.35312 50.13252 122.14395 51.92336 122.14395 54.13252V59.67845C122.14395 61.88762 120.35312 63.67845 118.14395 63.67845ZM105.478 50.13252' fill='none'/>
 <g transform='translate(108.81097,53.68547)'>
 <g stroke='none' transform='scale(-1.00375,1.00375)translate(-63.498909,48.223109)scale(-1,-1)'>
-<g fill='#000'>
+<g fill='#808080'>
 <g stroke='none'>
-<text class='f0' x='-63.498909' y='48.223109'>13</text>
+<text class='f0' x='-63.498909' y='48.223109'><tspan fill='#808080'>13</tspan></text>
 </g>
 </g>
 </g>
 </g>
-<clipPath id='pgfcp16'>
+<clipPath id='pgfcp15'>
 <path d='M61.23846 92.0762H52.57251C50.36334 92.0762 48.57251 90.28537 48.57251 88.0762V82.64026C48.57251 80.43109 50.36334 78.64026 52.57251 78.64026H61.23846C63.44763 78.64026 65.23846 80.43109 65.23846 82.64026V88.0762C65.23846 90.28537 63.44763 92.0762 61.23846 92.0762ZM48.57251 78.64026'/> </clipPath>
-<g clip-path='url(#pgfcp16)'>
+<g clip-path='url(#pgfcp15)'>
 <g transform='matrix(1,0,0,1,56.90549,85.35823)'>
 <g transform='matrix(0.3321,0,0,0.26775,0.0,0.0)'>
-<linearGradient gradientTransform='rotate(90)' id='pgfsh10'>
- <stop offset='0.0' stop-color=' #ccf '/>
- <stop offset='0.25' stop-color=' #ccf '/>
- <stop offset='0.5' stop-color=' #e6e6ff '/>
+<linearGradient gradientTransform='rotate(90)' id='pgfsh2'>
+ <stop offset='0.0' stop-color=' #ccc '/>
+ <stop offset='0.25' stop-color=' #ccc '/>
+ <stop offset='0.5' stop-color=' #e6e6e6 '/>
  <stop offset='0.75' stop-color=' #fff '/>
  <stop offset='1.0' stop-color=' #fff '/>
  </linearGradient>
 <g transform='translate(-50.1875,-50.1875)'>
-<rect height='100.375' style='fill:url(#pgfsh10); stroke:none' width='100.375'/>
+<rect height='100.375' style='fill:url(#pgfsh2); stroke:none' width='100.375'/>
 </g>
 </g>
 </g>
@@ -415,19 +415,19 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <path d='M61.23846 92.0762H52.57251C50.36334 92.0762 48.57251 90.28537 48.57251 88.0762V82.64026C48.57251 80.43109 50.36334 78.64026 52.57251 78.64026H61.23846C63.44763 78.64026 65.23846 80.43109 65.23846 82.64026V88.0762C65.23846 90.28537 63.44763 92.0762 61.23846 92.0762ZM48.57251 78.64026' fill='none'/>
 <g transform='translate(51.90549,81.97324)'>
 <g stroke='none' transform='scale(-1.00375,1.00375)translate(-63.498909,48.223109)scale(-1,-1)'>
-<g fill='#000'>
+<g fill='#808080'>
 <g stroke='none'>
-<text class='f0' x='-63.498909' y='48.223109'>14</text>
+<text class='f0' x='-63.498909' y='48.223109'><tspan fill='#808080'>14</tspan></text>
 </g>
 </g>
 </g>
 </g>
-<clipPath id='pgfcp17'>
+<clipPath id='pgfcp16'>
 <path d='M118.14395 92.1312H109.478C107.26883 92.1312 105.478 90.34036 105.478 88.1312V82.58527C105.478 80.3761 107.26883 78.58527 109.478 78.58527H118.14395C120.35312 78.58527 122.14395 80.3761 122.14395 82.58527V88.1312C122.14395 90.34036 120.35312 92.1312 118.14395 92.1312ZM105.478 78.58527'/> </clipPath>
-<g clip-path='url(#pgfcp17)'>
+<g clip-path='url(#pgfcp16)'>
 <g transform='matrix(1,0,0,1,113.81097,85.35823)'>
 <g transform='matrix(0.3321,0,0,0.26993,0.0,0.0)'>
-<linearGradient gradientTransform='rotate(90)' id='pgfsh10'>
+<linearGradient gradientTransform='rotate(90)' id='pgfsh17'>
  <stop offset='0.0' stop-color=' #ccf '/>
  <stop offset='0.25' stop-color=' #ccf '/>
  <stop offset='0.5' stop-color=' #e6e6ff '/>
@@ -435,7 +435,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
  <stop offset='1.0' stop-color=' #fff '/>
  </linearGradient>
 <g transform='translate(-50.1875,-50.1875)'>
-<rect height='100.375' style='fill:url(#pgfsh10); stroke:none' width='100.375'/>
+<rect height='100.375' style='fill:url(#pgfsh17); stroke:none' width='100.375'/>
 </g>
 </g>
 </g>
@@ -680,44 +680,201 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 </g>
 </g>
 </g>
-<g stroke-width='1.6'>
-<g fill='#f00' stroke='#f00'>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
 <g stroke-dasharray='3.0,3.0' stroke-dashoffset='0.0'>
-<path d='M136.23074 6.03287L119.84395 22.4207' fill='none'/>
+<path d='M136.23074 6.03287L120.34598 21.91864' fill='none'/>
+<g transform='matrix(-0.70708,0.70712,-0.70712,-0.70708,120.34598,21.91864)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
 </g>
 </g>
 </g>
-<g stroke-width='1.6'>
-<path d='M142.26372 6.97296V21.47978' fill='none'/>
 </g>
-<g stroke-width='1.6'>
-<path d='M119.84395 28.45274H133.73074' fill='none'/>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
+<path d='M142.26372 6.97296V20.76978' fill='none'/>
+<g transform='matrix(0.0,1.0,-1.0,0.0,142.26372,20.76978)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
 </g>
-<g stroke-width='1.6'>
-<path d='M113.81097 35.4257V49.93253' fill='none'/>
 </g>
-<g stroke-width='1.6'>
-<path d='M135.29056 35.4257L120.78287 49.93253' fill='none'/>
 </g>
-<g stroke-width='1.6'>
-<path d='M8.53297 56.90549H48.37251' fill='none'/>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
+<path d='M119.84395 28.45274H133.02074' fill='none'/>
+<g transform='translate(133.02074,28.45274)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
 </g>
-<g stroke-width='1.6'>
-<path d='M8.53297 61.16975L48.37251 81.09422' fill='none'/>
 </g>
-<g stroke-width='1.6'>
-<path d='M65.43846 56.90549H105.278' fill='none'/>
 </g>
-<g stroke-width='1.6'>
-<path d='M56.90549 63.76846V78.44026' fill='none'/>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
+<path d='M113.81097 35.4257V49.22252' fill='none'/>
+<g transform='matrix(0.0,1.0,-1.0,0.0,113.81097,49.22252)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
 </g>
-<g stroke-width='1.6'>
-<path d='M113.81097 63.87845V78.38527' fill='none'/>
 </g>
-<g stroke-width='1.6'>
-<g fill='#f00' stroke='#f00'>
+</g>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
+<path d='M135.29056 35.4257L121.28493 49.43051' fill='none'/>
+<g transform='matrix(-0.70712,0.70706,-0.70706,-0.70712,121.28493,49.4305)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
+</g>
+</g>
+</g>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
+<path d='M8.53297 56.90549H47.6625' fill='none'/>
+<g transform='translate(47.6625,56.90549)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
+</g>
+</g>
+</g>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
+<path d='M8.53297 61.16975L47.73753 80.77667' fill='none'/>
+<g transform='matrix(0.89433,0.44727,-0.44727,0.89433,47.73753,80.77667)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
+</g>
+</g>
+</g>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
+<path d='M65.43846 56.90549H104.568' fill='none'/>
+<g transform='translate(104.568,56.90549)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
+</g>
+</g>
+</g>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
+<path d='M56.90549 63.76846V77.73026' fill='none'/>
+<g transform='matrix(0.0,1.0,-1.0,0.0,56.90549,77.73026)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
+</g>
+</g>
+</g>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
 <g stroke-dasharray='3.0,3.0' stroke-dashoffset='0.0'>
-<path d='M65.43846 85.35823H105.278' fill='none'/>
+<path d='M105.278 61.16975L66.07344 80.77667' fill='none'/>
+<g transform='matrix(-0.89433,0.44727,-0.44727,-0.89433,66.07344,80.77667)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
+</g>
+</g>
+</g>
+</g>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
+<path d='M113.81097 63.87845V77.67526' fill='none'/>
+<g transform='matrix(0.0,1.0,-1.0,0.0,113.81097,77.67526)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
+</g>
+</g>
+</g>
+<g stroke-width='0.8'>
+<g fill='#ccc' stroke='#ccc'>
+<g stroke-dasharray='3.0,3.0' stroke-dashoffset='0.0'>
+<path d='M65.43846 85.35823H104.568' fill='none'/>
+<g transform='translate(104.568,85.35823)'>
+<g stroke-width='0.64'>
+ <g stroke-dasharray='none' stroke-dashoffset='0.0'>
+ <g stroke-linecap='round'>
+ <g stroke-linejoin='round'>
+ <path d='M-1.55997 2.07996C-1.42996 1.29997 0 .12999 .38998 0C0-.12999-1.42996-1.29997-1.55997-2.07996' fill='none'/>
+ </g>
+ </g>
+ </g>
+ </g>
+</g>
 </g>
 </g>
 </g>
@@ -1190,7 +1347,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='-8.642958' y='-2.758363'>•</text>
+<text class='f1' x='-8.642958' y='-2.758363'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1203,7 +1360,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='-.806394' y='-2.758363'><tspan fill='#f00'>◦</tspan></text>
+<text class='f1' x='-.806394' y='-2.758363'><tspan fill='#f99'>◦</tspan></text>
 </g>
 </g>
 </g>
@@ -1216,7 +1373,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='7.030171' y='-2.758363'>•</text>
+<text class='f1' x='7.030171' y='-2.758363'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1253,7 +1410,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='-8.642958' y='4.524704'><tspan fill='#f00'>◦</tspan></text>
+<text class='f1' x='-8.642958' y='4.524704'><tspan fill='#f99'>◦</tspan></text>
 </g>
 </g>
 </g>
@@ -1266,7 +1423,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='-.806394' y='4.524704'>•</text>
+<text class='f1' x='-.806394' y='4.524704'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1279,7 +1436,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='7.030171' y='4.524704'>•</text>
+<text class='f1' x='7.030171' y='4.524704'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1294,7 +1451,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='30.539864' y='4.524704'>•</text>
+<text class='f1' x='30.539864' y='4.524704'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1316,7 +1473,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='-8.642958' y='11.807772'>•</text>
+<text class='f1' x='-8.642958' y='11.807772'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1329,7 +1486,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='-.806394' y='11.807772'>•</text>
+<text class='f1' x='-.806394' y='11.807772'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1342,7 +1499,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='7.030171' y='11.807772'>•</text>
+<text class='f1' x='7.030171' y='11.807772'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1357,7 +1514,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='30.539864' y='11.807772'>•</text>
+<text class='f1' x='30.539864' y='11.807772'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1394,7 +1551,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='14.866735' y='19.090839'>•</text>
+<text class='f1' x='14.866735' y='19.090839'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1407,7 +1564,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='22.7033' y='19.090839'>•</text>
+<text class='f1' x='22.7033' y='19.090839'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1421,7 +1578,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='38.376428' y='19.090839'>•</text>
+<text class='f1' x='38.376428' y='19.090839'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1469,7 +1626,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='14.866735' y='26.373907'>•</text>
+<text class='f1' x='14.866735' y='26.373907'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1482,7 +1639,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='22.7033' y='26.373907'>•</text>
+<text class='f1' x='22.7033' y='26.373907'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1495,7 +1652,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='30.539864' y='26.373907'>•</text>
+<text class='f1' x='30.539864' y='26.373907'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1508,7 +1665,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='38.376428' y='26.373907'>•</text>
+<text class='f1' x='38.376428' y='26.373907'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1530,7 +1687,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='-.806394' y='33.656974'>•</text>
+<text class='f1' x='-.806394' y='33.656974'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1543,7 +1700,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='7.030171' y='33.656974'>•</text>
+<text class='f1' x='7.030171' y='33.656974'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1557,7 +1714,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='22.7033' y='33.656974'>•</text>
+<text class='f1' x='22.7033' y='33.656974'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1570,21 +1727,33 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='30.539864' y='33.656974'>•</text>
+<text class='f1' x='30.539864' y='33.656974'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
 </g>
 </g>
 </g>
-<g stroke='#000' stroke-miterlimit='10' transform='translate(38.376428,33.656974)scale(0.996264,-0.996264)'/>
+<g stroke='#000' stroke-miterlimit='10' transform='translate(38.376428,33.656974)scale(0.996264,-0.996264)'>
+<g transform='translate(3.53297,3.53297)'>
+<g stroke='none' transform='scale(-1.00375,1.00375)translate(38.376428,33.656974)scale(-1,-1)'>
+<g fill='#000'>
+<g stroke='none'>
+<g fill='black'>
+<text class='f1' x='38.376428' y='33.656974'><tspan fill='#f99'>◦</tspan></text>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
 <g stroke='#000' stroke-miterlimit='10' transform='translate(46.212993,33.656974)scale(0.996264,-0.996264)'>
 <g transform='translate(3.53297,3.53297)'>
 <g stroke='none' transform='scale(-1.00375,1.00375)translate(46.212993,33.656974)scale(-1,-1)'>
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='46.212993' y='33.656974'>•</text>
+<text class='f1' x='46.212993' y='33.656974'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1619,7 +1788,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='14.866735' y='40.940042'>•</text>
+<text class='f1' x='14.866735' y='40.940042'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1632,21 +1801,33 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='22.7033' y='40.940042'>•</text>
+<text class='f1' x='22.7033' y='40.940042'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
 </g>
 </g>
 </g>
-<g stroke='#000' stroke-miterlimit='10' transform='translate(30.539864,40.940042)scale(0.996264,-0.996264)'/>
+<g stroke='#000' stroke-miterlimit='10' transform='translate(30.539864,40.940042)scale(0.996264,-0.996264)'>
+<g transform='translate(3.53297,3.53297)'>
+<g stroke='none' transform='scale(-1.00375,1.00375)translate(30.539864,40.940042)scale(-1,-1)'>
+<g fill='#000'>
+<g stroke='none'>
+<g fill='black'>
+<text class='f1' x='30.539864' y='40.940042'><tspan fill='#f99'>◦</tspan></text>
+</g>
+</g>
+</g>
+</g>
+</g>
+</g>
 <g stroke='#000' stroke-miterlimit='10' transform='translate(38.376428,40.940042)scale(0.996264,-0.996264)'>
 <g transform='translate(3.53297,3.53297)'>
 <g stroke='none' transform='scale(-1.00375,1.00375)translate(38.376428,40.940042)scale(-1,-1)'>
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='38.376428' y='40.940042'>•</text>
+<text class='f1' x='38.376428' y='40.940042'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1659,7 +1840,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='46.212993' y='40.940042'><tspan fill='#f00'>◦</tspan></text>
+<text class='f1' x='46.212993' y='40.940042'><tspan fill='#f99'>◦</tspan></text>
 </g>
 </g>
 </g>
@@ -1696,7 +1877,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='30.539864' y='48.223109'>•</text>
+<text class='f1' x='30.539864' y='48.223109'><tspan fill='#999'>•</tspan></text>
 </g>
 </g>
 </g>
@@ -1709,7 +1890,7 @@ text.f1 {font-family:cmsy10;font-size:9.96264px}
 <g fill='#000'>
 <g stroke='none'>
 <g fill='black'>
-<text class='f1' x='38.376428' y='48.223109'><tspan fill='#f00'>◦</tspan></text>
+<text class='f1' x='38.376428' y='48.223109'><tspan fill='#f99'>◦</tspan></text>
 </g>
 </g>
 </g>
