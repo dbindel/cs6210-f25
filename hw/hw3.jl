@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.20.17
+# v0.20.18
 
 using Markdown
 using InteractiveUtils
@@ -51,11 +51,11 @@ In lecture, we discussed *column* strictly diagonally dominant matrices (column 
 
 - Suppose $A$ is strictly row diagonally dominant.  Argue that if $(Ax)_i = 0$ for any nonzero $x$, then $|x_i| < \max_{j \neq i} |x_j|$ and therefore $x_i$ cannot be the maximum magnitude element of $x$.  *Hint*: Start by writing $x_i = -\sum_{j\neq i} a_{ij}/a_{ii} x_j$.
 
-- Using the previous result, argue that if $A$ is row SDD, then $A^{-1}$ must be column SDD (and vice-versa).
+- Using the previous result, argue that if $A$ is row SDD, then $A^{-1}$ must have the largest element on the diagonal SDD (and similarly if $A$ is col SDD).
 
 - Also argue that if $A$ is row (or column) SDD is written as a block 2-by-2 matrix, then $A_{22}$ is also row (or column) SDD.
 
-- Argue that therefore the Schur complements in a row SDD matrix are again row SDD.
+- Argue that the Schur complements in a row SDD matrix are again row SDD.
 """
 
 # ╔═╡ e56f8efd-0d7f-461d-acc7-ba966e962d61
@@ -69,7 +69,7 @@ $$M = \begin{bmatrix} A & B \\ B^T & 0 \end{bmatrix}$$
 where $A \in \mathbb{R}^{n \times n}$ is positive definite and $B \in \mathbb{R}^{n \times k}, k < n$ has full column rank.
 
 Show that we can factor $M$ as
-$\begin{bmatrix} L_{11} & 0 \\ L_{21} & L_{22} \end{bmatrix} =
+$M = \begin{bmatrix} L_{11} & 0 \\ L_{21} & L_{22} \end{bmatrix} 
 \begin{bmatrix} I & 0 \\ 0 & -I \end{bmatrix}
 \begin{bmatrix} L_{11}^T & L_{21}^T \\ 0 & L_{22}^T \end{bmatrix}$
 
@@ -107,7 +107,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PLUTO_MANIFEST_TOML_CONTENTS = """
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.11.6"
+julia_version = "1.11.7"
 manifest_format = "2.0"
 project_hash = "ac1187e548c6ab173ac57d4e72da1620216bce54"
 
@@ -145,7 +145,7 @@ version = "5.11.0+0"
 # ╠═ca0206b9-e4ee-4f5f-8685-80efaf7ff0ba
 # ╟─5eae7aea-ba30-45cf-98c7-1e3f77d98cef
 # ╠═11518318-ecb5-4b8f-b18d-1f38c4067c3b
-# ╟─1e9f796c-52cd-45b3-b41c-85cab739c372
+# ╠═1e9f796c-52cd-45b3-b41c-85cab739c372
 # ╟─e56f8efd-0d7f-461d-acc7-ba966e962d61
 # ╠═6d60b660-fd05-4156-abaa-d0dd89b68ab0
 # ╟─00000000-0000-0000-0000-000000000001
