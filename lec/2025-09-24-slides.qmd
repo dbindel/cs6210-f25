@@ -1,0 +1,346 @@
+---
+title: "CS 6210: Matrix Computations"
+subtitle: Introduction to least squares
+author: David Bindel
+date: 2025-09-24
+format:
+  revealjs:
+    embed-resources: true
+    code-annotations: below
+    html-math-method: mathjax
+    mermaid-format: svg
+---
+
+# Basics
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+```{julia}
+#|echo: false
+#|output: false
+using Plots
+using LinearAlgebra
+```
+
+## Least squares problem
+
+Goal:
+$$
+  \mbox{minimize } \frac{1}{2} \|r\|^2 \mbox{ s.t. } r \in \Omega.
+$$
+What is the derivative of this objective?
+
+## Calculus aside
+
+Derivative:
+$$
+  \delta \left( \frac{1}{2} \|r\|^2 \right) =
+  \Re \langle \delta r, r \rangle;
+$$
+(Get rid of the $\Re$ part for real problems.)
+
+## Linear least squares
+
+Optimization:
+$$
+  \mbox{minimize } \frac{1}{2} \|r\|^2 \mbox{ s.t. } r(x) = b-Ax
+$$
+Stationarity condition: for any $\delta x$,
+$$
+  \langle \delta r, r \rangle = -\langle A \delta x, r \rangle = 0
+$$
+
+- Residual is *orthogonal* to anything in $\mathcal{R}(A)$
+- Orthogonal is aka *normal*; hence, the *normal equations*
+
+## Linear least squares in pictures
+
+![](_fig/lspic.svg)
+
+## Solving the normal equations
+
+Can write $A^T r = 0$ as
+$$
+  A^T A x = A^T b
+$$
+Matrix $M = A^T A$ is the *Gram matrix*
+
+- $m_{ij}$ is the dot product of columns $a_{:,i}$ and $a_{:,j}$
+- SPD if $A$ is full rank (which we'll assume all of today)
+- We've seen this before (matrix rep'ns of inner products)
+
+## Solving the normal equations
+
+Unique solution if $A$ is full column rank:
+$$
+  x = (A^T A)^{-1} A^T b = A^\dagger b
+$$
+where $A^\dagger$ is the *Moore-Penrose pseudoinverse*.
+
+## Exact recovery
+
+Suppose $b = Ax$.  Then
+$$
+  A^\dagger b = (A^T A)^{-1} A^T b = (A^T A)^{-1} (A^T A) x = x
+$$
+That is: $A^\dagger A = I$.
+
+## Pertinent projectors
+
+Now consider
+$$
+  \Pi = A A^\dagger = A (A^T A)^{-1} A^T
+$$
+
+- Generally not an identity
+- It is a projector, i.e. $\Pi^2 = \Pi$ (why?)
+- This is the *orthogonal* projector onto $\mathcal{R}(A)$
+
+## Residual projectors
+
+If $\Pi$ is a projector, so is $I-\Pi$.  Why?
+
+. . .
+
+For the orthogonal projector, $I-\Pi$ is the *residual projector*:
+$$
+  (I-\Pi) b = b-Ax_* = r, \quad x_* = A^\dagger b
+$$
+Exact recovery: $\mathcal{R}(A) = \mathcal{N}(I-\Pi)$
+
+## Aside on pseudoinverses
+
+More generally, pseudoinverses generalize inverses when
+$\mathcal{A} : \mathcal{V} \rightarrow \mathcal{W}$ is not both 1-1
+and onto.
+
+- Case 1: 1-1 and not onto (e.g. least squares)
+  - $\mathcal{B} \mathcal{A} : \mathcal{V} \rightarrow \mathcal{V}$ is
+    an identity
+  - $\Pi = \mathcal{A} \mathcal{B} : \mathcal{W} \rightarrow
+    \mathcal{W}$ is a *projector* ($\Pi^2 = \Pi$)
+- Case 2: not 1-1, but onto (e.g. minimal norm)
+  - $\Pi = \mathcal{B} \mathcal{A} : \mathcal{V} \rightarrow \mathcal{V}$ is
+    a projector
+  - $\mathcal{A} \mathcal{B} : \mathcal{W} \rightarrow
+    \mathcal{W}$ is an identity
+- Case 3: neither 1-1 nor onto -- projectors either way!
+
+## A different argument
+
+Suppose $x = A^\dagger b + z$.  Then
+$$
+  \|Ax-b\|^2 = \|Az\|^2 + \|(I-P)b\|^2
+$$
+Why is this true?  And why does it imply $A^\dagger b$ is the minimizer?
+
+## Normal equations two ways
+
+Approach 1: $A^T r = 0$ and $r = b-Ax$, so
+$$
+  A^T A x = A^T b
+$$
+Approach 2: Keep $r$ as an explicit variable
+$$
+  \begin{bmatrix} I & A \\ A^T & 0 \end{bmatrix}
+  \begin{bmatrix} r \\ x \end{bmatrix} =
+  \begin{bmatrix} b \\ 0 \end{bmatrix}
+$$
+Can get from 2 to 1 by Gaussian elimination...
+
+## Other inner products
+
+Several slides ago, we switched from
+$$
+  \forall \delta x \in \mathcal{X}, \langle A \delta x, r \rangle = 0
+$$
+to
+$$
+  A^T r = 0
+$$
+
+. . .
+
+But the standard inner product is not the only inner product!
+
+## Polynomial picture
+
+Consider a polynomial approximation problem:
+$$
+  \mbox{minimize } \|r(p)\|^2 \mbox{ s.t. } r(p) = p-f, p \in \mathcal{P}_d
+$$
+where we use the $L^2([-1,1])$ norm.  Steps:
+
+- Write $p(x) = \sum_{j=0}^d q_j(x) c_j$ for some basis polynomials
+- Should satisfy $\langle q_i, r \rangle = 0$ for each $q_i$ in the basis
+
+What does this look like?
+
+## Minimum norm problems
+
+Consider $A \in \bbR^{m \times n}$ with $m < n$ (and full rank); solve
+$$
+  \mbox{minimize } \frac{1}{2} \|x\|^2 \mbox{ s.t. } Ax = b.
+$$
+
+. . .
+
+Solution: $x = A^T (AA^T)^{-1} b = A^\dagger b$.
+
+- Approach 1: Calculus (Lagrange multipliers)
+- Approach 2: Consider $A^\dagger b + z$ and show $z$ must be zero
+
+# Least squares and statistics
+
+## Regression model
+
+Suppose
+$$
+  y = Xc + \epsilon
+$$
+
+- Covariates (factors) $X$ are known
+- Observations $y$ are contaminated with noise $\epsilon$
+  - Usually $\epsilon_i$ is iid normal with mean 0, variance $\sigma^2$
+- Goal: recover $c$ as best we can, maybe predict at new points
+
+## Linear unbiased estimators
+
+Given
+$$
+  y = Xc + \epsilon
+$$
+the linear estimator
+$$
+  \hat{c} = My
+$$
+is *unbiased* if $\mathbb{E}[\hat{c}] = MXc = c$, i.e.
+$M$ a pseudoinverse of $X$.
+
+. . .
+
+NB: If $\operatorname{Var}[\epsilon] = \sigma^2 I$, then
+$\operatorname{Var}[\hat{c}] = M (\sigma^2 I) M^T$.
+
+## Gauss-Markov
+
+Gauss-Markov: $\hat{c} = X^\dagger y$ is the *best* linear unbiased
+estimator
+
+- "Best" means "minimal variance"
+- But what does this mean for matrices?
+
+. . .
+
+A: Want to show $\operatorname{Var}[M y] \succeq
+\operatorname{Var}[X^\dagger y]$ whenever $MX=I$
+
+. . .
+
+Argument: Write $M = X^\dagger + D$ where $DX = 0$ and expand.
+
+. . .
+
+::: {style="margin-top:50px;"}
+NB: If $\operatorname{Var}[\epsilon] = C$, need $X^T C^{-1} (X\hat{c}-y) = 0$.
+:::
+
+## Maximum likelihood
+
+Suppose $\epsilon \sim N(0,C)$.  Likelihood of $y$ is
+$$
+  \ell(c|y) = \frac{1}{\sqrt{\det(2\pi C)}} \exp\left( -\frac{1}{2}
+  (y-Xc)^T C^{-1} (y-Xc) \right)
+$$
+Fixed $C$: $\ell$ is maximized at $X^T C^{-1} (X\hat{c}-y) = 0$.
+
+. . .
+
+::: {style="margin-top:50px;"}
+Non-Gaussian noise gives nonlinear estimators.
+:::
+
+## Interpreting the residual
+
+If $\epsilon$ is iid, should reflect in residual:
+
+- About same number of positive and negative $r_i$?
+- Auto-correlation between consecutive $r_i$?
+- Any concentration on particular "spatial" frequencies?
+
+Point: For statistics, there's more than just "is it small" to $r$!  
+(But we're mostly doing linear algebra here, not statistics...)
+
+# Factorizations for least squares
+
+## Goal
+
+Want to solve normal equations
+$$
+  A^T A x = A^T b.
+$$
+How should we do it?  Factorization!
+
+## Cholesky
+
+Simple to compute Cholesky factorization
+$$
+  A^T A = R^T R.
+$$
+Then solve
+$$
+  R^T R x = A^T b
+$$
+by forward and back substitution.
+
+## Cholesky
+
+Define $\kappa(A) = \sigma_{\max}(A)/\sigma_{\min}(A) = \|A\| \|A^\dagger\|$
+
+- Note that $\kappa(A^T A) = \kappa(A)^2$ (why?)
+- Maybe Cholesky isn't great if $A$ is somewhat ill-conditioned...
+
+## QR approach
+
+Suppose $A^T A = R^T R$.  Fwd substitution on $R^T R x = A^T b$:
+$$
+  R x = R^{-T} A^T b.
+$$
+Let $Q = A R^{-1}$.  Then
+$$\begin{aligned}
+  Q^T Q 
+  &= R^{-T} A^T A R^{-1} \\
+  &= R^{-T} R^T R R^{-1} = I
+\end{aligned}$$
+That is, $Q$ has orthonormal columns.
+
+## QR factorization
+
+- Note that $\kappa(A) = \kappa(R)$!
+- But forming $Q = AR^{-1}$ requires Cholesky on $A^T A$?
+- No!  Will talk about better ways to compute QR next time
+
+## SVD
+
+Suppose $A = U \Sigma V^T$ an economy SVD.  Then
+$$
+  A^\dagger = V \Sigma^{-1} U^T
+$$
+
+- About as numerically stable as we can hope
+- *But* computing SVD is relatively expensive
+- Will mostly use SVD for ill-conditioned case
+
+## Factorization summary
+
+$$\begin{aligned}
+A^\dagger &= (A^T A)^{-1} A^T  & \Pi &= A (A^T A)^{-1} A^T \\
+          &= (R^T R)^{-1} A^T  &     &= A (R^T R)^{-1} A^T \\
+          &= R^{-1} Q^T        &     &= QQ^T \\
+          &= V \Sigma^{-1} U^T &     &= UU^T
+\end{aligned}$$
+
+- QR will be our favorite "workhorse" factorization
+- Now we just need to know how to compute it!

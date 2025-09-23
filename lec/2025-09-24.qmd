@@ -233,8 +233,8 @@ $y = Xc + \epsilon$ comes from maximizing the (log) likelihood function.
 If $\epsilon$ is a vector of multivariate Gaussian noise with mean zero
 and covariance $C$, then the likelihood function is
 $$
-  \ell(y) = \frac{1}{\sqrt{\det(2\pi C}} \exp\left( -\frac{1}{2}
-  (y-Xc)^T C^{-1} (y-xC) \right),
+  \ell(y) = \frac{1}{\sqrt{\det(2\pi C)}} \exp\left( -\frac{1}{2}
+  (y-Xc)^T C^{-1} (y-Xc) \right),
 $$
 and for a fixed $C$, maximizing the likelihood corresponds to minimizing
 $\|y-Xc\|_{C^{-1}}^2$.
