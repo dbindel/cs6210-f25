@@ -24,7 +24,8 @@ FIGS=   subnormal0.svg \
 	sgraph-A-13.svg \
 	sgraph-A-14.svg \
 	sgraph-L.svg \
-	sgraph-LT.svg
+	sgraph-LT.svg \
+	lspic.svg
 
 %.svg: out/%.xdv
 	dvisvgm $<
