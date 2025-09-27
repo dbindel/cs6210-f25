@@ -25,10 +25,15 @@ FIGS=   subnormal0.svg \
 	sgraph-A-14.svg \
 	sgraph-L.svg \
 	sgraph-LT.svg \
-	lspic.svg
+	lspic.svg \
+	reflector.svg \
+	qr-econ.svg \
+	qr-QTr.svg \
+	svd-econ.svg \
+	svd-UTr.svg
 
 %.svg: out/%.xdv
-	dvisvgm $<
+	dvisvgm -n $<
 
 out/%.xdv: %.tex
 	xelatex --no-pdf --output-directory=out $<

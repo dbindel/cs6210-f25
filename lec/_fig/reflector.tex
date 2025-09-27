@@ -1,0 +1,13 @@
+\documentclass[dvisvgm,tikz]{standalone}
+\begin{document}
+  \begin{tikzpicture}[scale=0.6]
+    \draw [thick,dashed] (-1,0) -- (5,0);
+    \draw [ultra thick,->] (0,0) -- (4,3);
+    \draw [ultra thick,->] (0,0) -- (4,-3);
+    \draw [ultra thick,->] (4,-3) -- (4,3);
+    \draw [thick] (3,0) -- (3,1) -- (4,1);
+    \draw (4,2) node [right] {$x-\|x\| y$};
+    \draw (3.4,3) node [left] {$x$};
+    \draw (3.4,-3) node [left] {$\|x\| y$};
+  \end{tikzpicture}
+\end{document}

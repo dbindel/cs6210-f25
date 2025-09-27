@@ -249,10 +249,9 @@ $$
 Now suppose we are given a vector $x$ and we want to find a reflection
 that transforms $x$ into a direction parallel to some unit vector $y$.
 The right reflection is through a hyperplane that bisects the angle
-between $x$ and $y$ (see Figure [1](#fig1){reference-type="ref"
-reference="fig1"}), which we can construct by taking the hyperplane
-normal to $x-\|x\|y$. That is, letting $u = x - \|x\|y$ and
-$v = u/\|u\|$, we have
+between $x$ and $y$ (see @fig-reflector), which we can construct by
+taking the hyperplane normal to $x-\|x\|y$. That is, letting
+$u = x - \|x\|y$ and $v = u/\|u\|$, we have
 $$\begin{aligned}
   (I-2vv^T)x
   & = x - 2\frac{(x+\|x\|y)(x^T x + \|x\| x^T y)}{\|x\|^2 + 2 x^T y \|x\| + \|x\|^2 \|y\|^2} \\
@@ -264,15 +263,11 @@ but the first element of the vector $x$. So with appropriate choices
 of reflections, we can take a matrix $A$ and zero out all of the
 subdiagonal elements of the first column.
 
-<figure id="fig1">
-<div class="center">
+::: {#fig-reflector}
+![](_fig/reflector.svg)
 
-</div>
-<figcaption>Construction of a reflector to transform <span
-class="math inline"><em>x</em></span> into <span
-class="math inline">∥<em>x</em>∥<em>y</em></span>, <span
-class="math inline">∥<em>y</em>∥ = 1</span>.</figcaption>
-</figure>
+Construction of a reflector to transform $x$ into $\|x\| y$, $\|y\| = 1$.
+:::
 
 Now think about applying a sequence of Householder transformations to
 introduce subdiagonal zeros into $A$, just as we used a sequence of
@@ -281,55 +276,56 @@ elimination. As with $LU$ factorization, we can re-use the storage of
 $A$ by recognizing that the number of nontrivial parameters in the
 vector $w$ at each step is the same as the number of zeros produced by
 that transformation. This gives us the following:
+```{.julia}
+function hqr!(A)
+    m,n = size(A)
+    tau = zeros(n)
 
-    function hqr!(A)
-        m,n = size(A)
-        tau = zeros(n)
+    for j = 1:n
 
-        for j = 1:n
+        # Find H = I-tau*w*w' to zero out A[j+1:end,j]
+        normx = norm(A[j:end,j])
+        s     = -sign(A[j,j])
+        u1    = A[j,j] - s*normx
+        w     = A[j:end,j]/u1
+        w[1]  = 1.0
+        A[j+1:end,j] = w[2:end]   # Save trailing part of w
+        A[j,j] = s*normx          # Diagonal element of R
+        tau[j] = -s*u1/normx      # Save scaling factor
 
-            # Find H = I-tau*w*w' to zero out A[j+1:end,j]
-            normx = norm(A[j:end,j])
-            s     = -sign(A[j,j])
-            u1    = A[j,j] - s*normx
-            w     = A[j:end,j]/u1
-            w[1]  = 1.0
-            A[j+1:end,j] = w[2:end]   # Save trailing part of w
-            A[j,j] = s*normx          # Diagonal element of R
-            tau[j] = -s*u1/normx      # Save scaling factor
+        # Update trailing submatrix by multipling by H
+        A[j:end,j+1:end] -= tau[j]*w*(w'*A[j:end,j+1:end])
 
-            # Update trailing submatrix by multipling by H
-            A[j:end,j+1:end] -= tau[j]*w*(w'*A[j:end,j+1:end])
-
-        end
-
-        A, tau
     end
 
+    A, tau
+end
+```
 If we ever need $Q$ or $Q^T$ explicitly, we can always form it from the
 compressed representation. We can also multiply by $Q$ and $Q^T$
 implicitly:
-
-    function applyQ!(QR, τ, X)
-        m, n = size(QR)
-        for j = n:-1:1
-            w = [1.0; QR[j+1:end,j]]
-            X[j:end,:] -= tau[j]*w*(w'*X[j:end,:])
-        end
-        X
+```{.julia}
+function applyQ!(QR, τ, X)
+    m, n = size(QR)
+    for j = n:-1:1
+        w = [1.0; QR[j+1:end,j]]
+        X[j:end,:] -= tau[j]*w*(w'*X[j:end,:])
     end
+    X
+end
 
-    function applyQT!(QR, τ, X)
-        m, n = size(QR)
-        for j = 1:n
-            w = [1.0; QR[j+1:end,j]]
-            X[j:end,:] -= tau[j]*w*(w'*X[j:end,:])
-        end
-        X
+function applyQT!(QR, τ, X)
+    m, n = size(QR)
+    for j = 1:n
+        w = [1.0; QR[j+1:end,j]]
+        X[j:end,:] -= tau[j]*w*(w'*X[j:end,:])
     end
+    X
+end
 
-    applyQ(QR, tau, X) = applyQ!(QR, tau, copy(X))
-    applyQT(QR, tau, X) = applyQ(QR, tau, copy(X))
+applyQ(QR, tau, X) = applyQ!(QR, tau, copy(X))
+applyQT(QR, tau, X) = applyQ(QR, tau, copy(X))
+```
 
 # Block reflectors
 
