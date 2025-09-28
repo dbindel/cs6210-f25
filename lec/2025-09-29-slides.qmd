@@ -1,0 +1,737 @@
+---
+title: "CS 6210: Matrix Computations"
+subtitle: Householder, Givens, and QR factorization
+author: David Bindel
+date: 2025-09-29
+format:
+  revealjs:
+    embed-resources: true
+    code-annotations: below
+    html-math-method: mathjax
+    mermaid-format: svg
+---
+
+# Factorizations
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+```{julia}
+#|echo: false
+#|output: false
+using Plots
+using LinearAlgebra
+
+include("_common.jl")
+```
+
+## Basic setup
+
+Goal: Solve the linear least squares problem
+$$
+  \min \|Ax-b\|^2
+$$
+where $A \in \bbR^{m \times n}$, $m > n$.  Solution:
+$$
+  x = A^\dagger b = (A^T A)^{-1} A^T b.
+$$
+$A^\dagger$ is the *Moore-Penrose pseudoinverse*.
+
+## Basic setup
+
+![](_fig/lspic.svg)
+
+## What does backslash do?
+
+```{julia}
+#|echo: true
+#|output: false
+let
+    # Set up least squares problem
+    A = [0.873  0.197; 0.484  0.94; 0.768  0.355]
+    b = [0.565; 0.949; 0.613]
+
+    # Solve the problem
+    x = A\b  # <1>
+
+    # Residual check
+    r = b-A*x # <2>
+    norm(A'*r)/norm(b) # <3>
+end
+```
+1. Solves the least squares problem via QR (behind the scenes)
+2. $r$ is not zero!  Should satisfy $A^T r = 0$
+3. Measure $\|A^T r\|/\|b\|$ (about $3 \macheps$ here)
+
+## What does backslash do?
+
+```{julia}
+#|echo: true
+#|output: false
+let
+    # Set up least squares problem
+    A = [0.873  0.197; 0.484  0.94; 0.768  0.355]
+    b = [0.565; 0.949; 0.613]
+
+    # Solve the problem four ways + sanity check
+    x0 = A\b
+    F1 = cholesky(A'*A); x1 = F1\(A'*b); @assert x1 ≈ x0
+    F2 = qr(A);          x2 = F2\b;      @assert x2 ≈ x0
+    F3 = svd(A);         x3 = F3\b;      @assert x3 ≈ x0
+end
+```
+
+- Four uses of backslash, four different algorithms!
+- Backslash supports different methods for different types
+- But all four lines solve the same least squares problem
+
+## Cholesky
+
+```{.julia}
+F = cholesky(A'*A)
+x = F\(A'*b)
+```
+- Compute $R^T R = A^T A$
+- Solve $R^T R x = A^T b$ by forward/backward substitution
+- Fast, but $\kappa(A^T A) = \kappa(A)^2$
+
+## QR
+
+```{.julia}
+F = qr(A)
+x = F\b
+```
+
+- Compute $A = QR$ with $Q^T Q = I$ and $R$ upper triangular
+- One version: $Q = AR^{-1}$ where $R^T R = A^T A$
+  - We will see better algorithms today
+- Solution via $Rx = Q^T b$ 
+  - For economy case where $R$ is square
+  - Which leads us to...
+
+## QR: Economy and full
+
+![](_fig/qr-econ.svg)
+
+- $Q_1$ a basis for $\mathcal{R}(A)$, $Q_2$ a basis for $\mathcal{R}(A)^\perp$
+- Full QR has square $Q \in \bbR^{m \times m}$
+- Economy has square $R \in \bbR^{n \times n}$
+- Latter is a piece of the former
+
+## Full QR and least squares
+
+![](_fig/qr-QTr.svg)
+
+- Orthogonal invariance: $\|b-Ax\| = \|Q^T (b-Ax)\|$
+- Solve $R_1 x = Q_1^T b$ to set first part to 0
+- Minimum residual is $\|Q_2^T b\|$
+
+## Full QR and least squares
+
+In terms of QR factorization,
+write $A^\dagger = R_1^{-1} Q_1^T$; note:
+$$\begin{aligned}
+  A^\dagger &= R^{-1} Q^T \\
+  \Pi &= Q_1 Q_1^T \\
+  I-\Pi &= Q_2 Q_2^T
+\end{aligned}$$
+Sanity check: Derive the latter two from the first.
+
+## QR: Economy and full
+
+```{.julia}
+F = qr(A)
+x = F\b
+```
+
+- Stores $R_1$ and a compact representation for $Q$
+  - But also sort of $Q_1$: `F.Q * F.R` does what you'd hope!
+  - And can explicitly extract $Q_1$, e.g. with `F.Q[:,1:2]`
+- Simultaneously represents economy *and* full
+
+## SVD
+
+```{.julia}
+F = svd(A)
+x = F\b
+```
+
+- Compute $A = U \Sigma V^T$ (economy)
+- Solution $A^\dagger b = V \Sigma^{-1} U^T b$ 
+- Costs more than QR (but good stability)
+
+## SVD
+
+![](_fig/svd-econ.svg)
+
+- SVD also comes in full and economy flavors!
+- Full has square $U$ and $V$, economy has square $\Sigma$
+- $U_1$ is a basis for $\mathcal{R}(A)$, 
+  $U_2$ a basis for $\mathcal{R}(A)^\perp$
+
+## SVD
+
+![](_fig/svd-econ.svg)
+
+Can compute a full SVD from full QR and SVD of $R$
+$$
+  \tilde{U}_1 \Sigma_1 V^T = R, \quad
+  U_1 = Q_1 \tilde{U}_1, \quad
+  U_2 = Q_2
+$$
+
+## Full SVD and least squares
+
+![](_fig/svd-UTr.svg)
+
+- Orthogonal invariance: $\|b-Ax\| = \|U^T (b-Ax)\|$
+- Solve $\Sigma_1 V^T x = U_1^T b$ to set first part to 0
+- Minimum residual is $\|U_2^T b\|$
+
+## Full SVD and least squares
+
+In terms of SVD,
+write $A^\dagger = V \Sigma_1^{-1} U_1^T$; note:
+$$\begin{aligned}
+  A^\dagger &= V \Sigma_1^{-1} U_1^T \\
+  \Pi &= U_1 U_1^T \\
+  I-\Pi &= U_2 U_2^T
+\end{aligned}$$
+
+## SVD: Economy and full
+
+```{.julia}
+F = svd(A)
+x = F\b
+
+F = svd(A, full=true)
+x = F\b
+```
+
+- `svd` forms ordinary dense representations of $U$ and $V$
+- Therefore, different calls for full and economy
+- Economy (unsurprisingly) costs less
+  - And we can do most things without computing full version
+  - But full can be useful for algebra even if we compute econ
+
+# Gram-Schmidt
+
+## Gram-Schmidt setup
+
+Intro LA version: Given a basis
+$$
+  V = \begin{bmatrix} v_1 & v_2 & \ldots & v_n \end{bmatrix}
+$$
+Produce an orthonormal basis
+$$
+  Q = \begin{bmatrix} q_1 & q_2 & \ldots & q_n \end{bmatrix}
+$$
+s.t. for $k = 1, \ldots, n$
+$$
+  \calV_{1:k} 
+  \equiv \operatorname{span}\{v_1, \ldots, v_k\} 
+  = \operatorname{span}\{q_1, \ldots, q_k\}
+$$
+
+## Projector perspective
+
+Define $Q_{1:k} = \begin{bmatrix} q_1 & \ldots & q_k \end{bmatrix}$.
+Orth projector onto $\calV_{1:k}$ is
+$$
+  \Pi^{(k)} = Q_{1:k} Q_{1:k}^T = V_{1:k} V_{1:k}^\dagger
+$$
+Therefore
+$$
+  w_{k} = \left( I - \Pi^{(k-1)} \right) v_{k}
+$$
+is a residual of $v_k$ to $\calV_{1:k-1}$.  Take $q_k = w_k/\|w_k\|$.
+
+## Projector perspective
+
+![](_fig/lspic-gs.svg)
+
+$$\begin{aligned}
+v_k &= \Pi^{k-1} v_k + w_k \\
+    &= Q_{1:k-1} r_{1:k-1,k} + q_k r_{kk},
+\end{aligned}$$
+where $r_{1:k-1} = Q_{1:k-1}^T v_k$ and $r_{kk} = \|w_k\|$
+
+## GS as left-looking QR
+
+Clean up indexing with blocking!  Given $V_1 = Q_1 R_{11}$, want
+$$\begin{bmatrix} V_1 & v_2 \end{bmatrix} =
+  \begin{bmatrix} Q_1 & q_2 \end{bmatrix}
+  \begin{bmatrix} R_{11} & r_{12} \\ 0 & r_{22} \end{bmatrix}$$
+Get $r_{12}$ from
+$$
+  Q_1^T v_2 = Q_1^T Q_1 r_{12} + Q_1^T q_2 r_{22} = r_{12}
+$$
+Leaves $q_2 r_{22} = (I-Q_1 Q_1^T) v_2$.
+
+## GS as left-looking QR
+
+```{julia}
+#| echo: true
+#| output: false
+function gsqr(V :: AbstractMatrix)
+    m, n = size(V)
+    Q, R = zeros(m,n), zeros(n,n)
+    for j = 1:n
+        R[1:j-1,j] = Q[:,1:j-1]'*V[:,j]
+        wj = V[:,j] - Q[:,1:j-1]*R[1:j-1,j]
+        R[j,j] = norm(wj)
+        Q[:,j] = wj/R[j,j]
+    end
+    Q, R
+end
+```
+
+## Stability
+
+```{julia}
+#| echo: true
+let
+    A = [ 2.2721  -2.4514   2.2149   0.6596;
+          0.8912  -0.9615   0.8687   0.2587;
+         -1.3414   1.4472  -1.3076  -0.3894;
+         -0.343    0.3701  -0.3344  -0.0996;
+         -0.1771   0.1911  -0.1726  -0.0514]   
+    Q, R = gsqr(A)
+    norm(A-Q*R)/norm(A), norm(Q'*Q-I), cond(A)
+end
+```
+
+- We get $A - \hat{Q} \hat{R} \approx 0$
+- And $\hat{R}$ is exactly upper triangular by construction
+- But we may lose $\hat{Q}^T \hat{Q} \approx I$!  Why?
+
+## Stability
+
+```{.julia}
+function gsqr(V :: AbstractMatrix)
+    m, n = size(V)
+    Q, R = zeros(m,n), zeros(n,n)
+    for j = 1:n
+        R[1:j-1,j] = Q[:,1:j-1]'*V[:,j]
+        wj = V[:,j] - Q[:,1:j-1]*R[1:j-1,j]  # CANCELLATION?!
+        R[j,j] = norm(wj)
+        Q[:,j] = wj/R[j,j]
+    end
+    Q, R
+end
+```
+
+- What if near linear dependency among columns?
+- Results in $\|w_j\| \ll \|v_j\|$ (cancellation)
+- New direction is not approximately normal to previous!
+
+## Better Gram-Schmidt
+
+Two ideas improve stability:
+
+- Rewrite the projector slightly (modified Gram-Schmidt)
+- Iterative refinement (re-orthogonalization)
+
+## Modified Gram-Schmidt
+
+Observe:
+$$
+  I - \sum_{i=1}^j q_i q_i^T = \prod_{i=1}^j (I-q_i q_i^T)
+$$
+
+Questions:
+
+- Why is this true?
+- Why might it help (some) with cancellation?
+
+## Modified Gram-Schmidt
+
+```{julia}
+#| echo: true
+#| output: false
+function mgsqr(V :: AbstractMatrix)
+    m, n = size(V)
+    Q, R = zeros(m,n), zeros(n,n)    
+    for j = 1:n
+        wj = V[:,j]
+        for i = 1:j-1
+            Rij = Q[:,i]'*wj
+            wj -= Q[:,i]*Rij
+            R[i,j] = Rij
+        end
+        R[j,j] = norm(wj)
+        Q[:,j] = wj/R[j,j]
+    end
+    Q, R
+end
+```
+
+## MGS stability
+
+```{julia}
+#| echo: true
+let
+    A = [ 2.2721  -2.4514   2.2149   0.6596;
+          0.8912  -0.9615   0.8687   0.2587;
+         -1.3414   1.4472  -1.3076  -0.3894;
+         -0.343    0.3701  -0.3344  -0.0996;
+         -0.1771   0.1911  -0.1726  -0.0514]   
+    Q, R = mgsqr(A)
+    norm(A-Q*R)/norm(A), norm(Q'*Q-I)
+end
+```
+
+- Problem is partly mitigated
+- But still not fantastic
+
+## Reorthogonalization
+
+- Final residual is far from normal (because cancellation)
+- What if we *reorthogonalize*?
+  $$\begin{aligned}
+  \tilde{w}^{(1)}_k &= (I-\Pi^{(k-1)}) v_k + f^{(1)}, &
+  \|f^{(1)}\| &\lesssim O(\macheps) \|v_k\| \\
+  \tilde{w}^{(2)}_k &= (I-\Pi^{(k-1)}) \tilde{w}_k^{(1)} + f^{(2)}, &
+  \|f^{(2)}\| &\lesssim O(\macheps) \|\tilde{w}^{(1)}_k\| \\
+  \end{aligned}$$
+  - $f^{(1)}$ may not be small relative to $w_k$, bad for orthogonality
+  - But $f^{(1)}$ likely to not line up with $\calV_{k-1}$, so
+    probably doesn't happen in second step.
+  
+## Reorthogonalization
+
+```{julia}
+#| echo: true
+#| output: false
+function mgsqr2(V :: AbstractMatrix)
+    m, n = size(V)
+    Q, R = zeros(m,n), zeros(n,n)    
+    for j = 1:n
+        wj = V[:,j]
+        for s = 1:2
+            for i = 1:j-1
+                dRij = Q[:,i]'*wj
+                wj -= Q[:,i]*dRij
+                R[i,j] += dRij
+            end
+        end
+        R[j,j] = norm(wj)
+        Q[:,j] = wj/R[j,j]
+    end
+    Q, R
+end
+```
+
+## MGS stability
+
+```{julia}
+#| echo: true
+let
+    A = [ 2.2721  -2.4514   2.2149   0.6596;
+          0.8912  -0.9615   0.8687   0.2587;
+         -1.3414   1.4472  -1.3076  -0.3894;
+         -0.343    0.3701  -0.3344  -0.0996;
+         -0.1771   0.1911  -0.1726  -0.0514]   
+    Q, R = mgsqr2(A)
+    norm(A-Q*R)/norm(A), norm(Q'*Q-I)
+end
+```
+
+- One step reorthogonalization usually does it
+- But this increases the cost
+- And still not foolproof!
+
+Fortunately, there is another way...
+
+# Householder QR
+
+## Inspiration: LU
+
+Consider an algorithm style:
+
+- LU: transform to upper triangular via *shear transforms*
+- QR: transform to upper triangular via *reflections*
+
+Need a simple reflection to introduce zeros in a column!
+
+## Reflector algebra
+
+A *Householder transformation* (elementary reflector) is
+$$
+  H = I-2vv^T, \quad \|v\|_2 = 1
+$$
+
+- Here $v$ is the normal to a reflection plane
+- Given $\|y\|=1$, want $Hx = \|x\| y$ (think $y = \pm e_1$)
+- Desired normal $v$ given by
+  $$
+    v \propto x - \|x\| y.
+  $$
+
+## Reflector picture
+
+![](_fig/reflector.svg){fig-align="center"}
+
+## Reflector code
+
+```{julia}
+#|echo: true
+#|output: false
+"""
+    reflector_v(x)
+
+Compute v s.t. H = 1-2vv' satisfies Hx = s*e1, s = -sign(x[1])
+"""
+function reflector_v(x)
+    v = copy(x)
+    s = v[1] >= 0 ? 1 : -1
+    v[1] += s*norm(x)
+    v ./= norm(v)
+end
+```
+
+Why do we care about the sign?
+
+## Reflector signs
+
+- Usually reflect $x$ to $s \|x\| e_1$ where $s = -\mathrm{sign}(x_1)$
+- Alternative if we want $\|x\| e_1$ and $x_1 > 0$:
+  $$\begin{aligned}
+    x_1 - \|x\| 
+    &= \frac{x_1^2 - \|x\|^2}{x_1 + \|x\|}
+     = \frac{\|x_2\|}{x_1 + \|x\|} \|x_2\|
+  \end{aligned}$$
+
+## Applying the reflector
+
+```{julia}
+#|echo: true
+reflect(v, z) = z - 2*v*(v'*z)
+
+let
+    A = [1.0 2.0; 3.0 4.0; 5.0 6.0]
+    v = reflector_v(A[:,1])
+    reflect(v, A)
+end
+```
+
+## Triangular reduction
+
+For each column $k$:
+
+- Compute reflectors to zero out subdiagonals in column $k$
+- Store reflector normals in $U^{(k)}$
+- Store incrementally transformed matrices in $A^{(k)}$
+
+```{julia}
+#| echo: false
+#| output: asis
+let
+    A = [ 0.806708  0.913857  0.158624 ;
+          0.420333  0.149918  0.364439 ;
+          0.380093  0.356551  0.0895146;
+          0.933815  0.885559  0.26984  ]
+
+    U = zeros(4,3)
+    
+    slide("Triangular reduction") do
+        slatex() do
+            println("V^{(0)} = ")
+            print_cmatrix(U)
+        end
+        slatex() do
+            println("A^{(0)} = ")
+            smatrix(A) do i,j,aij
+                round(aij, digits=4)
+            end
+        end
+    end
+
+    for k = 1:3
+        slide("Triangular reduction") do
+            v = reflector_v(A[k:end,k])
+            U[k:end,k] = v
+            A[k:end,k:end] .-= 2*v*(v'*A[k:end,k:end])
+            A[k+1:end,k] .= 0
+            slatex() do
+                println("V^{($(k))} = ")
+                smatrix(U) do i,j,uij
+                    scolor(uij == 0 ? "lightgray" : (j == k ? "red" : "black"),
+                           round(uij, digits=4))
+                end
+            end
+            slatex() do
+                println("A^{($(k))} = ")
+                smatrix(A) do i,j,aij
+                    aij = round(aij, digits=4)
+                    if i >= k
+                        if     j < k  scolor("lightgray", aij)
+                        elseif j == k scolor("blue", aij)
+                        else          scolor("purple", aij)
+                        end
+                    else
+                        scolor(aij == 0 ? "lightgray" : "black", aij)
+                    end
+                end
+            end
+        end
+    end
+
+    slide("Triangular reduction") do
+        slatex() do
+            println("V^{(3)} = ")
+            print_cmatrix(round.(U, digits=4))
+        end
+        slatex() do
+            println("A^{(3)} = ")
+            print_cmatrix(round.(A, digits=4))
+        end
+    end        
+end
+```
+
+## Compressed storage
+
+Nonzero structure of normals *almost* complements $R$.  
+Idea: Write
+$$
+  H = I - \tau w w^T
+$$
+where $w$ normalized to start with 1.
+
+## Householder QR factorization code
+
+```{.julia}
+function hqr!(A)
+    m,n = size(A)
+    tau = zeros(n)
+    for j = 1:n
+        # -- Find H = I-tau*w*w' to zero out A[j+1:end,j]
+        normx = norm(A[j:end,j])
+        s     = A[j,j] >= 0 ? -1 : 1
+        u1    = A[j,j] - s*normx
+        w     = A[j:end,j]/u1
+        w[1]  = 1.0
+        A[j+1:end,j] = w[2:end]   # Save trailing part of w
+        A[j,j] = s*normx          # Diagonal element of R
+        tau[j] = -s*u1/normx      # Save scaling factor
+        # -- Update trailing submatrix by multipling by H
+        A[j:end,j+1:end] -= tau[j]*w*(w'*A[j:end,j+1:end])
+    end
+    A, tau
+end
+```
+
+## What about $Q$?
+
+- We have the coefficients for $R$, but never form $Q$!
+- But: We have the parameters of the reflectors
+- Can implement multiplication by $Q$ or $Q^T$ using
+  $$\begin{aligned}
+    Q  &= (I-\tau_n v_n v_n^T) \ldots (I-\tau_1 v_1 v_1^T) \\
+    Q^T &= (I-\tau_1 v_1 v_1^T) \ldots (I-\tau_n v_n v_n^T)
+  \end{aligned}$$
+- Apply to columns of the identity to get $Q$ explicitly
+
+## Stability
+
+- Orthogonal matrices are *perfectly conditioned*!
+- So: easy to move between backward and forward errors
+- End up with backward stable QR
+
+## Block reflectors
+
+For level 3 BLAS, can compute block reflectors
+$$
+  I-WY^T = I-YTY^T, \quad T \mbox{ upper triangular}
+$$
+
+- So-called $WY$ and compact $WY$ form.
+- Takes a little more workspace ($T$ matrices vs $\tau_i$)
+- Compact $WY$ is the default in LAPACK (and often Julia)
+
+# Other variants
+
+## Givens rotations
+
+A *Givens rotation* for $x \in \bbR^{2}$ is
+$$
+  G = \begin{bmatrix} c & -s \\ s & c \end{bmatrix}, \quad
+  c^2 + s^2 = 1
+$$
+such that
+$$
+  Gx = \begin{bmatrix} r \\ 0 \end{bmatrix}
+$$
+Can compose as an alternative to Householder to build orthogonal matrices.
+
+## Sparse QR
+
+- Get sparse $R$ when $A^T A$ has sparse Cholesky
+- Can try to store sparse representation of $Q$...
+- Or use "$Q$-less QR" and solve semi-normal equations
+  $$
+    Rx = R^{-T} (A^T b)
+  $$
+- Can clean up with iterative refinement
+
+## Iterative refinement
+
+Think linear system iterative refinement on
+$$\begin{bmatrix} I & A \\ A^T & 0 \end{bmatrix} 
+  \begin{bmatrix} r \\ x \end{bmatrix} =
+  \begin{bmatrix} b \\ 0 \end{bmatrix}.$$
+
+Gives code
+```{.julia}
+r = b-A*x
+d = R\(R'\(A'*r))
+x += d
+```
+
+## TSQR
+
+![](_fig/tsqr1.svg)
+
+## TSQR
+
+![](_fig/tsqr2.svg)
+
+## TSQR
+
+![](_fig/tsqr3.svg)
+
+## TSQR
+
+![](_fig/tsqr4.svg)
+
+## TSQR
+
+When $A \in \bbR^{m \times n}$ and $m \gg n$, may make sense to block:
+$$
+  A 
+  = \begin{bmatrix} A_1 \\ A_2 \end{bmatrix}
+  = \begin{bmatrix} Q_1 R_1 \\ Q_2 R_2 \end{bmatrix}
+  = \begin{bmatrix} Q_1 & \\ & Q_2 \end{bmatrix} 
+    \begin{bmatrix} R_1 \\ R_2 \end{bmatrix}.
+$$
+Now compute QR for full $A$ via
+$$
+  \begin{bmatrix} R_1 \\ R_2 \end{bmatrix} = \tilde{Q} R, \quad
+  Q = \begin{bmatrix} Q_1 & \\ & Q_2 \end{bmatrix} \tilde{Q}
+$$
+Good for parallelism.  Can apply recursively.
+
+## Blendenpik
+
+Consider semi-normal equations:
+$$
+  x = R^{-1} (R^{-T} (A^T b)).
+$$
+
+- Iterative refinement requires accurate $A^T (b-Ax)$
+- Can be sloppier with $R$!
+- Note $R^T R = A^T A$ is $m$ times a covariance
+- Idea: replace with a sample covariance (sketch)
+- One of many algorithms in *randomized numerical LA* (RandNLA)

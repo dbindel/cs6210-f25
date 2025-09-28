@@ -30,7 +30,11 @@ FIGS=   subnormal0.svg \
 	qr-econ.svg \
 	qr-QTr.svg \
 	svd-econ.svg \
-	svd-UTr.svg
+	svd-UTr.svg \
+	tsqr1.svg \
+	tsqr2.svg \
+	tsqr3.svg \
+	tsqr4.svg 
 
 %.svg: out/%.xdv
 	dvisvgm -n $<
