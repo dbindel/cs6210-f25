@@ -524,7 +524,7 @@ $$
 $$
 which leads to an approximate $R$ given by
 $$
-  \tilde{Q} \hat{R} = \sqrt{\frac{n}{|\mathcal{I}|} A_{\mathcal{I},:}.
+  \tilde{Q} \hat{R} = \sqrt{\frac{n}{|\mathcal{I}|}} A_{\mathcal{I},:}.
 $$
 If we use $\tilde{R}$ in place of $R$ in an iterative refinement loop,
 we might still hope for and expect to have fairly rapid convergence,
