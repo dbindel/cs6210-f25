@@ -92,11 +92,16 @@
 -
   date: 2025-09-29
   info: Householder, Givens, and QR factorization
+  notes: 2025-09-29.html
   hw:
     - info: Midterm (due 10/10)
+  ulinks:
+    - info: slides
+      url: lec/2025-09-29-slides.html
 -
   date: 2025-10-01
   info: Sensitivity analysis and ill-posedness
+  notes: 2025-10-01.html
 #
 # ==================
 # Week 7
