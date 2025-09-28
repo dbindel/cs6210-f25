@@ -195,8 +195,7 @@ Gram-Schmidt method (MGS) algorithm:
 ```{.julia}
 function orth_mgs(A)
     m,n = size(A)
-    Q = zeros(m,n)
-    R = zeros(n,n)
+    Q ,R = zeros(m,n), zeros(n,n)
     for j = 1:n
         v = A[:,j]                        # Take the jth original basis vector
         for k = 1:j-1

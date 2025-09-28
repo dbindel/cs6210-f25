@@ -24,6 +24,8 @@ using Plots
 using LinearAlgebra
 using SparseArrays
 using Printf
+
+include("_common.jl")
 ```
 
 ## Introduction
@@ -176,70 +178,13 @@ Q: Why is $(I + \tau_j e_j^T) (I - \tau_j e_j^T) = I$?
 #| echo: false
 #| output: asis
 
-function print_lvector(v :: AbstractVector)
-    m = length(v)
-    println("\\begin{bmatrix}")
-    for i = 1:m
-        println("$(v[i]) \\\\")
-    end
-    println("\\end{bmatrix}")
-end
-
-function print_cvector(v :: AbstractVector, c)
-    m = length(v)
-    println("\\begin{bmatrix}")
-    for i = 1:m
-        println("{\\color{$(c[i])}$(v[i])} \\\\")
-    end
-    println("\\end{bmatrix}")
-end
-
-function print_lmatrix(A :: AbstractMatrix)
-    m, n = size(A)
-    println("\\begin{bmatrix}")
-    for i = 1:m
-        print("$(A[i,1])")
-        for j = 2:n
-            print(" & $(A[i,j])")
-        end
-        println(" \\\\")
-    end
-    println("\\end{bmatrix}")
-end
-
-function print_cmatrix(A :: AbstractMatrix, c)
-    m, n = size(A)
-    println("\\begin{bmatrix}")
-    for i = 1:m
-        print("{\\color{$(c[i,1])}$(A[i,1])}")
-        for j = 2:n
-            print(" & {\\color{$(c[i,j])}$(A[i,j])}")
-        end
-        println(" \\\\")
-    end
-    println("\\end{bmatrix}")
-end
-
-function black_cmatrix(m, n)
-    c = Matrix{String}(undef,m,n)
-    c[:] .= "black"
-    c
-end
-
-function gray_zero_cmatrix(A, c)
-    c[A .== 0] .= "lightgray"
-    A, c
-end
-
-gray_zero_cmatrix(A) = gray_zero_cmatrix(A, black_cmatrix(size(A)...))
-
 function gauss_cmatrix(tau :: AbstractVector{T}, j) where {T}
     n = j + length(tau)
     M = Matrix{T}(I, n, n)
     M[j+1:n,j] .= -tau
     c = black_cmatrix(n, n)
     c[j+1:n,j] .= "red"
-    gray_zero_cmatrix(M, c)
+    gray_zero_cmatrix!(M, c)
 end
 
 let
@@ -248,129 +193,135 @@ let
     U = copy(A)
     L = Matrix{Int}(I,3,3)
 
-    println("## Example\n")
-    println("\$\$A = A^{(0)} = ")
-    print_lmatrix(A)
-    println("\$\$\n")
+    slide("Example") do
+        slatex() do
+            println("A = A^{(0)} = ")
+            print_lmatrix(A)
+        end
+    end
 
     for j = 1:2
-        println("## Example\n")
-       
-        println("\$\$")
-        c = black_cmatrix(3,3)
-        c[j,j:3] .= b
-        L[j+1:3,j] =  U[j+1:3,j]/U[j,j]
-        print_cmatrix(gauss_cmatrix(L[j+1:3,j],j)...)
-        print_cmatrix(U, c)
-        println("=")
-        U[j+1:end,j:end] -= L[j+1:end,j]*U[j,j:end]'
-        c[j+1:3,j+1:3] .= p
-        print_cmatrix(gray_zero_cmatrix(U, c)...)
-        println("\$\$\n")
-
-        println("Subtract multiples of row $j to introduce zeros in column $j:")
-        println("\$\$(I-\\tau_$j e_$j^T) A^{($(j-1))} = A^{($j)}, ")
-        println("\\quad\\tau_$j = ")
-        tau = zeros(Int,3)
-        tau[j+1:3] = L[j+1:3,j]
-        ctau = [r; r; r]
-        ctau[1:j] .= g
-        print_cvector(tau, ctau)
-        println(",\\quad e_$j = ")
-        ej = zeros(Int,3); ej[j] = 1
-        print_lvector(ej)
-        println("\$\$\n")
+        slide("Example") do
+            slatex() do
+                c = black_cmatrix(3,3)
+                c[j,j:3] .= b
+                L[j+1:3,j] =  U[j+1:3,j]/U[j,j]
+                print_cmatrix(gauss_cmatrix(L[j+1:3,j],j)...)
+                print_cmatrix(U, c)
+                println("=")
+                U[j+1:end,j:end] -= L[j+1:end,j]*U[j,j:end]'
+                c[j+1:3,j+1:3] .= p
+                print_cmatrix(gray_zero_cmatrix!(U, c)...)
+            end
+            println("Subtract multiples of row $j to introduce zeros in column $j:")
+            slatex() do
+                println("(I-\\tau_$j e_$j^T) A^{($(j-1))} = A^{($j)}, ")
+                println("\\quad\\tau_$j = ")
+                tau = zeros(Int,3)
+                tau[j+1:3] = L[j+1:3,j]
+                ctau = [r; r; r]
+                ctau[1:j] .= g
+                print_cvector(tau, ctau)
+                println(",\\quad e_$j = ")
+                ej = zeros(Int,3); ej[j] = 1
+                print_lvector(ej)
+            end
+        end
     end
 
-    println("## Example\n")
-    println("\$\$")
-    for j = 2:-1:1
-        print_cmatrix(gauss_cmatrix(L[j+1:3,j],j)...)
+    slide("Example") do
+        slatex() do
+            for j = 2:-1:1
+                print_cmatrix(gauss_cmatrix(L[j+1:3,j],j)...)
+            end
+            print_lmatrix(A)
+            println(" = ")
+            print_cmatrix(U)
+        end
+        print_spause()
+        println("But note: \$(I-\\tau_j e_j^T)^{-1} = (I + \\tau_j e_j)\$ -- so\n")
+        slatex() do
+            print_lmatrix(A)
+            println("= ")
+            for j = 1:2
+                print_cmatrix(gauss_cmatrix(-L[j+1:3,j],j)...)
+            end
+            print_cmatrix(U)
+        end
     end
-    print_lmatrix(A)
-    println(" = ")
-    print_cmatrix(gray_zero_cmatrix(U)...)
-    println("\$\$\n")
-    println(". . .\n")
-    println("But note: \$(I-\\tau_j e_j^T)^{-1} = (I + \\tau_j e_j)\$ -- so\n")
 
-    println("\$\$")
-    print_lmatrix(A)
-    println("= ")
-    for j = 1:2
-        print_cmatrix(gauss_cmatrix(-L[j+1:3,j],j)...)
+    slide("Example") do
+        println("Now note: \$(I+\\tau_1 e_1^T) (I + \\tau_2 e_2^T) = I + \\tau_1 e_1^T + \\tau_2 e_2^T\$\n")
+        slatex() do
+            for j = 1:2
+                print_cmatrix(gauss_cmatrix(-L[j+1:3,j],j)...)
+            end
+            println(" = ")
+            print_cmatrix(L, [k g g; r k g; r r k])
+        end
+        println("Therefore \$A = LU\$:\n")
+        slatex() do
+            print_lmatrix(A)
+            println("=")
+            print_cmatrix(L, [k g g; r k g; r r k])
+            print_cmatrix(U)
+        end
     end
-    print_cmatrix(gray_zero_cmatrix(U)...)
-    println("\$\$\n")
 
-    println("## Example\n")
-    println("Now note: \$(I+\\tau_1 e_1^T) (I + \\tau_2 e_2^T) = I + \\tau_1 e_1^T + \\tau_2 e_2^T\$\n")
-
-    println("\$\$")
-    for j = 1:2
-        print_cmatrix(gauss_cmatrix(-L[j+1:3,j],j)...)
+    slide("Example") do
+        slatex() do
+            print_lmatrix(A)
+            println("=")
+            print_cmatrix(L, [k g g; r k g; r r k])
+            print_cmatrix(U)
+        end
+        println("Solve \$Ax = b\$ by:\n")
+        println("- Forward substitution \$Ly = b\$ and")
+        println("- Back substitution \$Ux = y\$:\n")
     end
-    println(" = ")
-    print_cmatrix(L, [k g g; r k g; r r k])
-    println("\$\$\n")
-    println("Therefore \$A = LU\$:\n")
-    println("\$\$")
-    print_lmatrix(A)
-    println("=")
-    print_cmatrix(L, [k g g; r k g; r r k])
-    print_cmatrix(gray_zero_cmatrix(U)...)
-    println("\$\$\n")
 
-    println("## Example")
-    println("\$\$")
-    print_lmatrix(A)
-    println("=")
-    print_cmatrix(L, [k g g; r k g; r r k])
-    print_cmatrix(gray_zero_cmatrix(U)...)
-    println("\$\$\n")
-    println("Solve \$Ax = b\$ by:\n")
-    println("- Forward substitution \$Ly = b\$ and")
-    println("- Back substitution \$Ux = y\$:\n")
-
-    println("## Example\n")
-    println("Forward substitution:")
-    println("\$\$")
-    print_cmatrix(L, [k g g; r k g; r r k])
-    print_lvector(["y_1", "y_2", "y_3"])
-    println(" = ")
-    print_lvector([12; 15; 19])
-    println("\$\$\n")
-    println(". . .\n")
-    println("\$\$y = ")
-    print_lvector([12; -9; 1])
-    println("\$\$\n")
-
-    println("## Example\n")
-    println("Back substitution:")
-    println("\$\$")
-    print_cmatrix(U, [k k k; g k k; g g k])
-    print_lvector(["x_1", "x_2", "x_3"])
-    println(" = ")
-    print_lvector([12; -9; 1])
-    println("\$\$\n")
-    println(". . .\n")
-    println("\$\$x = ")
-    print_lvector([1; 1; 1])
-    println("\$\$\n")
+    slide("Example") do
+        println("Forward substitution:")
+        slatex() do
+            print_cmatrix(L, [k g g; r k g; r r k])
+            print_lvector(["y_1", "y_2", "y_3"])
+            println(" = ")
+            print_lvector([12; 15; 19])
+        end
+        print_spause()
+        slatex() do
+            println("y =")
+            print_lvector([12; -9; 1])
+        end
+    end
     
-    println("## Example\n")
-    println("\$\$")
-    print_lmatrix(A)
-    println("=")
-    print_cmatrix(L, [k g g; r k g; r r k])
-    print_cmatrix(gray_zero_cmatrix(U)...)
-    println("\$\$\n")
+    slide("Example") do
+        println("Back substitution:")
+        slatex() do
+            print_cmatrix(U, [k k k; g k k; g g k])
+            print_lvector(["x_1", "x_2", "x_3"])
+            println(" = ")
+            print_lvector([12; -9; 1])
+        end
+        print_spause()
+        slatex() do
+            println("x =")
+            print_lvector([1; 1; 1])
+        end
+    end
 
-    println("And we can pack both factors into one matrix:")
-    println("\$\$")
-    print_cmatrix(L-I+U, [k k k; r k k; r r k])
-    println("\$\$\n")    
-    
+    slide("Example") do
+        slatex() do
+            print_lmatrix(A)
+            println("=")
+            print_cmatrix(L, [k g g; r k g; r r k])
+            print_cmatrix(U)
+        end
+        println("And we can pack both factors into one matrix:")
+        slatex() do
+            print_cmatrix(L-I+U, [k k k; r k k; r r k])
+        end
+    end
 end
 ```
 
@@ -671,15 +622,15 @@ let
     cpiv = ["black", "black", "black", "black"]
 
     function print_slide(txt)
-        println("## Example\n")
-        println("\$\$")
-        AA = [@sprintf("%.2f", A[i,j]) for i=1:n, j=1:n]
-        print_cmatrix(AA, c)
-        println("\\quad")
-        print_cvector(piv, cpiv)
-        println("\$\$\n")
-        println(txt)
-        println("")
+        slide("Example") do
+            slatex() do
+                AA = [@sprintf("%.2f", A[i,j]) for i=1:n, j=1:n]
+                print_cmatrix(AA, c)
+                println("\\quad")
+                print_cvector(piv, cpiv)
+            end
+            println(txt)
+        end
     end
 
     print_slide("Initial matrix and permutation \$\\pi\$")
