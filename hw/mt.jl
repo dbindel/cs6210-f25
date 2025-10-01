@@ -122,7 +122,7 @@ $\begin{bmatrix} I & A \\ C^T & 0 \end{bmatrix}
 - Show that $F(CX) = F(C)$ for any nonsingular $X$, i.e. $F(C)$ really only depends on the range space of $C$
 - Show that $F(C)$ is always a pseudoinverse for $A$
 - Show that $F(A)$ is the Moore-Penrose pseudoinverse
-- Show that if $M$ is a positive definite matrix, $F(MA)$ is the pseudoinverse corresponding to minimizing $\phi(x) = \frac{1}{2} (b-Ax)^T M{-1} (b-Ax)$
+- Show that if $M$ is a symmetric positive definite matrix, $F(MA)$ is the pseudoinverse corresponding to minimizing $\phi(x) = \frac{1}{2} (b-Ax)^T M (b-Ax)$
 
 Bonus Q: When is there an SPD $M$ and nonsingular $X$ so that $CX = MA$?  Show how to construct such an $M$ and $X$ when they exist.
 """
