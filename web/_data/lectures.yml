@@ -108,9 +108,11 @@
 -
   date: 2025-10-06
   info: Rank deficiency and regularization
+  notes: 2025-10-06.html
 -
   date: 2025-10-08
   info: Constraints, sparsity, and projectors
+  notes: 2025-10-08.html
 #
 # ==================
 # Week 8
