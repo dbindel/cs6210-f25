@@ -9,81 +9,152 @@ date: 2025-10-06
 {{< include _commonm.tex >}}
 :::
 
+# Bias-variance decomposition
+
+The *bias-variance decomposition* is a standard result in statistics.
+Suppose we want to predict
+$$
+  y = f(x) + \epsilon
+$$
+where $f(x)$ is some underlying "ground truth" function and $\epsilon$
+is a noise term with mean zero and variance $\sigma^2$.  Some
+algorithm takes in a data set $D$ that encompasses our observations
+about the function (usually $D = \{(x_i, y_i)\}_{i=1}^n$) and produces
+a prediction function $s_D(x)$.  The data set (and the algorithm) may
+include some randomness, which we assume is independent of the
+measurement noise $\epsilon$ at any test point.  So we also define
+the mean and variance for the prediction function:
+$$
+  \bar{s}_D(x) = \bbE_D[s_D(x)], \quad
+  \Var_D[s_D(x)] = \bbE_D[(s_D(x)-\bar{s}_D(x))^2].
+$$
+The *bias* in the predictor is the difference between its mean and the
+true function $f(x)$:
+$$
+  \Bias_D[s_D(x)] = f(x)-\bar{s}_D(x).
+$$
+The bias-variance decomposition says that the squared prediction error
+at a test point $s$ can be written
+$$
+  \bbE_{D,\epsilon}[(y-s_D(x))^2] =
+  \Var_D[s_D(x)] + \Bias_D[s_D(x)]^2 + \sigma^2.
+$$
+The argument consists of two steps.  First, we expand the quadratic
+and use independence of $\epsilon$ from $D$ to get
+$$\begin{aligned}
+  \bbE_{D,\epsilon}[(y-s_D(x))^2] 
+  &= 
+  \bbE_{D}[(f(x)-s_D(x))^2] + 
+  2 \bbE_{D,\epsilon}[\epsilon (f(x)-s_D(x))] + 
+  \bbE_{\epsilon}[\epsilon^2] \\
+  &= 
+  \bbE_{D}[(f(x)-s_D(x))^2] + 
+  2 \bbE_{\epsilon}[\epsilon] \bbE_D[(f(x)-s_D(x))] + 
+  \bbE_{\epsilon}[\epsilon^2] \\
+  &=
+  \bbE_{D}[(f(x)-s_D(x))^2] + \sigma^2
+\end{aligned}$$
+since $\bbE_{\epsilon}[\epsilon] = 0$ and
+$\bbE_{\epsilon}[\epsilon^2] = \sigma^2$.  Now write
+$$
+  f(x)-s_D(x) = b(x) - e_D(x)
+$$
+where
+$$\begin{aligned}
+  b(x) & := f(x)-\bar{s}_D(x) \\
+  e_D(x) & := s_D(x)-\bar{s}_D(x).
+\end{aligned}$$
+Note that $b(x)$ the bias and that $\bbE_D[e_D(x)] = 0$ and
+$\bbE_D[e_D(x)^2] = \Var_D[s_D(x)]$, so that
+$$\begin{aligned}
+  \bbE_D[(b(x)-e_D(x))^2] &=
+  b(x)^2 - 2 b(x) \bbE_D(x) + \bbE_D[e_D(x)^2] \\
+  &= 
+  b(x)^2 + \Var_D[s_D(x)^2] \\
+  &= 
+  \Bias_D[s_D(x)]^2 + \Var_D[s_D(x)^2].
+\end{aligned}$$
+
 # Bias-variance tradeoffs in the matrix setting
 
-Least squares is often used to fit a model to be used for prediction
-in the future. In learning theory, there is a notion of
-*bias-variance* decomposition of the prediction error: the prediction
-error consists of a bias term due to using a space of models that does
-not actually fit the data, and a term that is related to variance in
-the model as a function of measurement noise on the input. These are
-concepts that we can connect concretely to the type of sensitivity
-analysis we have seen before, a task we turn to now.
+Now consider linear least squares in the context of the bias-variance
+tradeoff.  For simplicity, rather than a function $f(x)$, let us
+assume that our ground truth is a vector of measurements $f \in
+\bbR^M$.  At test time, we are trying to predict $y = f + e$, where
+$e$ is a vector of mean zero errors.  Our model space will be $\{Ax :
+x \in \bbR^n\}$, and our fitting algorithm will involve
+$$
+  \hat{x} = A_1^\dagger y_1, \quad
+  y_1 = f_1 + \tilde{e}_1
+$$
+where $A_1 \in \bbR^{m \times n}$ is a 
+subset of the rows of $A$ and $f_1$ is the corresponding subset of
+rows of $f$, and $\tilde{e}_1$ is a vector of mean zero training-time
+errors.  By linearity of expectation, the mean model is
+$$
+  \bar{x} = \bbE[\hat{x}] = A_1^\dagger f_1.
+$$
+and
+$$
+  \hat{x}-\bar{x} = A_1^\dagger \tilde{e}_1
+$$
+Then the bias-variance decomposition gives us
+$$
+  \bbE[\|y-A\hat{x}\|^2] =
+  \|f-A \bar{x}\|^2 + \bbE[\|AA_1^\dagger \tilde{e}_1\|^2] + \bbE[\|e\|^2].
+$$
+This is all as in the previous section, just with a concrete choice of
+algorithms for fitting the model.
 
-Suppose $A \in \bbR^{M \times n}$ is a matrix of factors that we wish to
-use in predicting the entries of $b \in \bbR^M$ via the linear model
+Now suppose that $x_* = A^\dagger f$ and $r = f - Ax_*$.  The model
+associated with $x_*$ is optimal: the squared bias term $\|r\|^2$ is as small
+as possible, and if a genie gives us $x_*$, there is no variance!  How
+does the model associated with $\hat{x}$ compare?  We can rewrite the 
+squared bias term for the $\hat{x}$ model as
 $$
-  Ax \approx b.
+  \|f-A \bar{x}\|^2 = \|r - A(\bar{x}-x_*)\|^2 = \|r\|^2 + \|A(\bar{x}-x_*)\|^2.
 $$
-We partition $A$ and $b$ into the first $m$ rows (where we have
-observations) and the remaining $M-m$ rows (where we wish to use the
-model for prediction):
+Note that $x_* = A_1^\dagger (b_1 + r_1)$, 
+so $\bar{x}-x_* = -A_1^\dagger r_1$.  Therefore
 $$
-  A = \begin{bmatrix} A_1 \\ A_2 \end{bmatrix}, \quad
-  b = \begin{bmatrix} b_1 \\ b_e \end{bmatrix}
+  \|f-A \bar{x}\|^2 = \|r\|^2 + \|AA_1^\dagger r_1\|^2.
 $$
-If we could access all of $b$, we would compute $x$ by the least
-square problem
+Putting things together, we have the decomposition
 $$
-  Ax = b + r, \quad r \perp \mathcal{R}(A).
+  \bbE[\|y-A\hat{x}\|^2] =
+  \left( \|r\|^2 + \|AA_1^\dagger r_1\|^2 \right) +
+  \left( \bbE[\|AA_1^\dagger \tilde{e}_1\|^2] + \bbE[\|e\|^2] \right),
 $$
-In practice, we are given only $A_1$ and $b_1 + e$ where $e$ is a
-vector of random errors, and we fit the model coefficients $\hat{x}$
-by solving
-$$
-  \mbox{minimize } \|A_1 \hat{x} - (b_1 + e)\|^2.
-$$
-Our question, then: what is the least squared error in using $\hat{x}$
-for prediction, and how does it compare to the best error possible?
-That is, what is the relation between $\|A \hat{x}-b\|^2$ and
-$\|r\|^2$?
+where the first two terms come from the bias and the second two terms
+come from the variance of the training error $\tilde{e}_1$ and the
+test error $e$.
 
-Note that 
-$$
-  A\hat{x}-b = A(\hat{x}-x) + r
-$$
-and by the Pythagorean theorem and orthogonality of the residual,
-$$
-  \|A\hat{x}-b\|^2 = \|A(\hat{x}-x)\|^2 + \|r\|^2.
-$$
-The term $\|\hat{r}\|^2$ is the (squared) bias term, the part of the
-error that is due to lack of power in our model. The term
-$\|A(\hat{x}-x)\|^2$ is the variance term, and is associated with
-sensitivity of the fitting process. If we dig further into this, we
-can see that
+Note that if $e$ and $\tilde{e}$ have independent entries with mean
+$\sigma^2$, then
 $$\begin{aligned}
-  x &= A_1^\dagger (b_1 + r_1) &
-  \hat x &= A_1^\dagger (b_1 + e),
+  \bbE[\|AA_1^\dagger \tilde{e}_1\|^2] 
+  &= \sigma^2 \|AA_1^\dagger\|_F^2
+   \leq \sigma^2 n \|A A_1^\dagger\|_2^2 \\
+  \bbE[\|e\|^2] &= \sigma^2 M
 \end{aligned}$$
-and so
+In this case, we have
 $$
-  \|A(\hat x - x)\|^2 = \|A A_1^\dagger (e-r_1)\|^2
+  \bbE[\|y-A\hat{x}\|^2] \leq
+  \left( 1 + \|AA_1^\dagger\|^2 \frac{\|r_1\|^2}{\|r\|^2} \right)
+  \|r\|^2 +
+  \left( 1 + \|AA_1^\dagger\|^2 \frac{n}{M} \right) M \sigma^2
 $$
-Taking norm bounds, we find
+We note that $\|r_1\|^2/\|r\|^2$ should be approximately $n/M$
+if the residual entries in $r_1$ are "typical" of those in $r$.  We
+can be cruder in our bounds and say
 $$
-  \|A(\hat x - x)\| \leq \|A\| \|A_1^\dagger\| (\|e\| + \|r_1)\|),
+  \bbE[\|y-A\hat{x}\|^2] \leq
+  \left( 1 + \|AA_1^\dagger\|^2 \right) \left( \|r\|^2 + M \sigma^2 \right).
 $$
-and putting everything together,
-$$
-  \|A\hat{x}-b\| \leq (1+\|A\| \|A_1^\dagger\|) \|r\| + \|A\|
-  \|A_1^\dagger\| \|e\|.
-$$
-If there were no measurement error $e$, we would have a
-*quasi-optimality* bound saying that the squared error in prediction
-via $\hat{x}$ is within a factor of $1 + \|A\| \|A_1^\dagger\|$ of the
-best squared error available for any similar model. If we scale the
-factor matrix $A$ so that $\|A\|$ is moderate in size, everything
-boils down to $\|A_1^\dagger\|$.
+This can be interpreted as a *quasi-optimality* result: the expected squared
+prediction error is within a constant factor 
+($1 + \|AA_1^\dagger\|^2$) of the best possible error given the model
+flexibility and the noise.
 
 When $\|A_1^\dagger\|$ is large, the problem of fitting to training
 data is ill-posed, and the accuracy can be compromised. What can we
@@ -217,187 +288,3 @@ regularized solution cannot be computed by one of the standard
 factorizations of numerical linear algebra. Instead, one treats it as
 a more general *convex optimization* problem. We will discuss some
 approaches to the solution of such problems later in the semester.
-
-# Regularization via iteration
-
-We have briefly talked about one iterative method already (iterative
-refinement), and will talk about other iterative methods later in the
-semester. Some of these iterations have a regularizing effect when
-they are truncated early. In fact, there is an argument that slowly
-convergent methods may be beneficial in some cases!
-
-As an example, consider the *Landweber iteration*, which is gradient
-descent applied to linear least squares problems:
-$$
-  x^{k+1} = x^k - \alpha_k A^T (Ax^k-b).
-$$
-If we start from the initial guess $x^0 = 0$ and let the step size be
-a fixed $\alpha_k = \alpha$, each subsequent step is a partial sum of
-a Neumann series
-$$\begin{aligned}
-  x^{k+1}
-  &= \sum_{j=0}^k (I-\alpha A^T A)^j \alpha A^T b \\
-  &= \left(I - (I-\alpha A^TA)^{k+1} \right) (\alpha A^TA)^{-1} \alpha A^T b \\
-  &= \left(I - (I-\alpha A^TA)^{k+1} \right) A^\dagger b.
-\end{aligned}$$
-Alternately, we can write the iterates in terms of the singular value
-decomposition with a filter for regularization:
-$$
-  x^{k+1} = V \tilde{\Sigma}^{-1} U^T b, \quad
-  \tilde{\sigma}_j^{-1} = (1-(1-\alpha \sigma_j^2)^{k+1}) \sigma_j^{-1}.
-$$
-Usually, the Landweber iteration is stopped when $k$ is large enough
-so that the filter is nearly the identity for large singular values,
-but is small enough to suppress the influence of small singular
-values.
-
-The Landweber iteration is not alone in having a regularizing effect,
-but it is easier to analyze than some of the more sophisticated
-Krylov-based methods that we will describe later in the semester.
-
-# Tradeoffs and tactics
-
-All four of the regularization approaches we have described are used in
-practice, and each has something to recommend it. The pivoted QR
-approach is relatively inexpensive, and it results in a model that
-depends on only a few factors. If taking the measurements to compute a
-prediction costs money --- or even costs storage or bandwidth for the
-factor data! --- such a model may be to our advantage. The Tikhonov
-approach is likewise inexpensive, and has a nice Bayesian interpretation
-(though we didn't talk about it). The truncated SVD approach involves
-the best approximation rank $k$ approximation to the original factor
-matrix, and can be interpreted as finding the $k$ best factors that are
-linear combinations of the original measurements. The $\ell_1$ approach
-again produces models with sparse coefficients; but unlike QR with
-column pivoting, the $\ell_1$ regularized solutions incorporate
-information about the vector $b$ along with the matrix $A$.
-
-So which regularization approach should one use? In terms of prediction
-quality, all can provide a reasonable deterrent against ill-posedness
-and overfitting due to highly correlated factors. Also, all of the
-methods described have a parameter (the number of retained factors, or a
-penalty parameter $\lambda$) that governs the tradeoff between how
-well-conditioned the fitting problem will be and the increase in bias
-that naturally comes from looking at a smaller class of models. Choosing
-this tradeoff intelligently may be rather more important than the
-specific choice of regularization strategy. A detailed discussion of how
-to make this tradeoff is beyond the scope of the class; but we will see
-some of the computational tricks involved in implementing specific
-strategies for choosing regularization parameters before we are done.
-
-# Choice of regularization
-
-All of the regularization methods we have discussed share a common
-trait: they define a parametric family of models. With more
-regularization, we restrict the range of models we can easily generate
-(adding bias), but we also reduce the sensitivity of the fit (reducing
-variance). The choice of the regularization parameter is a key aspect
-of these methods, and we now briefly discuss three different ways of
-systematically making that choice. In all cases, we rely on the
-assumption that the sample observations we use for the fit are
-representative of the population of observations where we might want
-to predict.
-
-## Morozov's discrepancy principle
-
-Suppose that we want to fit $Ax \approx \hat{b}$ by regularized least
-squares, and the (noisy) observation vector $\hat{b}$ is known to be
-within some error bound $\|e\|$ of the true values $b$. The
-discrepancy principle says that we should choose the regularization
-parameter so the residual norm is approximately $\|e\|$. That is, we
-seek the most stable fitting problem we can get subject to the
-constraint that the residual error for the regularized solution (with
-the noisy vector $\hat{b}$) is not much bigger than we would get from
-unknown true solution.
-
-One of the most obvious drawbacks of the discrepancy principle is that
-it requires that we have an estimate for the norm of the error in the
-data. Sadly, such estimates are not always available.
-
-## The L-curve
-
-A second approach to the regularization parameter is the *L-curve*. If
-we draw a parametric curve of the residual error versus solution norm
-on a log-log plot, with $\log \|r_{\lambda}\|$ on the $x$ axis and
-$\log \|x_{\lambda}\|$ on the $y$ axis, we often see an "L" shape. In
-the top of the vertical bar (small $\lambda$), we find that increasing
-regularization decreases the solution norm significantly without
-significantly increasing the residual error. Along the end of the
-horizontal part, increasing regularization increases the residual
-error, but does not significantly help with the solution norm. We want
-the corner of the curve, where the regularization is chosen to
-minimize the norm of the solution subject to the constraint that the
-residual is close to the smallest possible residual (which we would
-have without regularization).
-
-Computing the inflection point on the L-curve is a neat calculus
-exercise which we will not attempt here.
-
-## Cross-validation
-
-The idea with cross-validation is to choose the parameter by fitting
-the model on a subset of the data and testing on the remaining
-data. We may do this with multiple partitions into data used for
-fitting versus data reserved for checking predictions. We often choose
-regularization parameters to give the smallest error on the
-predictions in a cross-validation study.
-
-One variant of cross-validation involves minimizing the *leave-one-out
-cross-validation* (LOOCV) statistic:
-$$
-  \mbox{LOOCV} = \frac{1}{m} \sum_{i=1}^m \left[ Ax^{(-i)}-b \right]_i^2,
-$$
-where $x^{(-i)}$ denotes the model coefficients fit using all but the
-$i$th data point.
-
-To compute the LOOCV statistic in the most obvious way, we would
-delete each row $a_i^T$ of $A$ in turn, fit the model coefficients
-$x^{(-i)}$, and then evaluate $r^{(-i)} = b_i - a_i^T x^{(-i)}$. This
-involves $m$ least squares problems, for a total cost of $O(m^2 n^2)$
-(as opposed to the usual $O(mn^2)$ cost for an ordinary least squares
-problem). Let us find a better way! For the sake of concreteness, we
-will focus on the Tikhonov-regularized version of the problem
-
-The key is to write the equations for $x^{(-i)}$ as a small change to
-the equations for $(A^T A + \lambda^2 I) x^* = A^T b$:
-$$
-  (A^T A + \lambda^2 I - a_i a_i^T) x^{(-i)} = A^T b - a_i b_i.
-$$
-This subtracts the influence of row $i$ from both sides of the normal
-equations. By introducing the auxiliary variable $\gamma = -a_i^T
-x^{(-i)}$, we have
-$$
-  \begin{bmatrix}
-    A^TA + \lambda^2 I & a_i \\
-    a_i^T & 1
-  \end{bmatrix}
-  \begin{bmatrix} x^{(-i)} \\ \gamma \end{bmatrix} =
-  \begin{bmatrix} A^T b - a_i b_i \\ 0 \end{bmatrix}.
-$$
-Eliminating
-$x^{(-i)}$ gives
-$$
-  (1-\ell_i^2) \gamma = \ell_i^2 b_i - a_i^T x^*
-$$
-where $\ell_i^2 = a_i^T (A^T A + \lambda^2 I)^{-1} a_i$ is called the
-*leverage score* for row $i$. Now, observe that if $r = b-Ax^*$ is the
-residual for the full problem, then
-$$
-  (1-\ell_i^2) r^{(-i)}
-  = (1-\ell_i^2) (b_i + \gamma)
-  = (1-\ell_i^2) b_i + \ell_i^2 b_i - a_i^T x_*
-  = r_i,
-$$
-or, equivalently
-$$
-  r^{(-i)} = \frac{r_i}{1-\ell_i^2}.
-$$
-We finish the job by observing that $\ell_i^2$ is the $i$th diagonal
-element of the orthogonal projector $\Pi = A(A^TA + \lambda I)A^{-1}$,
-which we can also write in terms of the economy QR decomposition
-$$
-  \begin{bmatrix} A \\ \lambda I \end{bmatrix} =
-  \begin{bmatrix} Q_1 \\ Q_2 \end{bmatrix} R
-$$
-as $\Pi = Q_1 Q_1^T$.  Hence, $\ell_i^2$ is the squared row sum of
-$Q_1$ in the QR factorization.

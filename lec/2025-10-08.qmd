@@ -9,6 +9,73 @@ date: 2025-10-08
 {{< include _commonm.tex >}}
 :::
 
+# Regularization via iteration
+
+We have briefly talked about one iterative method already (iterative
+refinement), and will talk about other iterative methods later in the
+semester. Some of these iterations have a regularizing effect when
+they are truncated early. In fact, there is an argument that slowly
+convergent methods may be beneficial in some cases!
+
+As an example, consider the *Landweber iteration*, which is gradient
+descent applied to linear least squares problems:
+$$
+  x^{k+1} = x^k - \alpha_k A^T (Ax^k-b).
+$$
+If we start from the initial guess $x^0 = 0$ and let the step size be
+a fixed $\alpha_k = \alpha$, each subsequent step is a partial sum of
+a Neumann series
+$$\begin{aligned}
+  x^{k+1}
+  &= \sum_{j=0}^k (I-\alpha A^T A)^j \alpha A^T b \\
+  &= \left(I - (I-\alpha A^TA)^{k+1} \right) (\alpha A^TA)^{-1} \alpha A^T b \\
+  &= \left(I - (I-\alpha A^TA)^{k+1} \right) A^\dagger b.
+\end{aligned}$$
+Alternately, we can write the iterates in terms of the singular value
+decomposition with a filter for regularization:
+$$
+  x^{k+1} = V \tilde{\Sigma}^{-1} U^T b, \quad
+  \tilde{\sigma}_j^{-1} = (1-(1-\alpha \sigma_j^2)^{k+1}) \sigma_j^{-1}.
+$$
+Usually, the Landweber iteration is stopped when $k$ is large enough
+so that the filter is nearly the identity for large singular values,
+but is small enough to suppress the influence of small singular
+values.
+
+The Landweber iteration is not alone in having a regularizing effect,
+but it is easier to analyze than some of the more sophisticated
+Krylov-based methods that we will describe later in the semester.
+
+# Tradeoffs and tactics
+
+All four of the regularization approaches we have described are used in
+practice, and each has something to recommend it. The pivoted QR
+approach is relatively inexpensive, and it results in a model that
+depends on only a few factors. If taking the measurements to compute a
+prediction costs money --- or even costs storage or bandwidth for the
+factor data! --- such a model may be to our advantage. The Tikhonov
+approach is likewise inexpensive, and has a nice Bayesian interpretation
+(though we didn't talk about it). The truncated SVD approach involves
+the best approximation rank $k$ approximation to the original factor
+matrix, and can be interpreted as finding the $k$ best factors that are
+linear combinations of the original measurements. The $\ell_1$ approach
+again produces models with sparse coefficients; but unlike QR with
+column pivoting, the $\ell_1$ regularized solutions incorporate
+information about the vector $b$ along with the matrix $A$.
+
+So which regularization approach should one use? In terms of prediction
+quality, all can provide a reasonable deterrent against ill-posedness
+and overfitting due to highly correlated factors. Also, all of the
+methods described have a parameter (the number of retained factors, or a
+penalty parameter $\lambda$) that governs the tradeoff between how
+well-conditioned the fitting problem will be and the increase in bias
+that naturally comes from looking at a smaller class of models. Choosing
+this tradeoff intelligently may be rather more important than the
+specific choice of regularization strategy. A detailed discussion of how
+to make this tradeoff is beyond the scope of the class; but we will see
+some of the computational tricks involved in implementing specific
+strategies for choosing regularization parameters before we are done.
+
 # Choice of regularization
 
 All of the regularization methods we have discussed share a common
