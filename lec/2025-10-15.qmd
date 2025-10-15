@@ -106,12 +106,12 @@ distance to symmetry is straightforward in any unitarily invariant norm:
 it is always $\|A-A_H\| = \|A_K\|$. To prove this, Fan and Hoffman used
 the fact that unitary invariance implies that $\|A\| = \|A^T\|$, and so
 for any symmetric $Y$ 
-$$\begin{align*}
+$$\begin{aligned}
   \|A_K\|
   &= \frac{1}{2} \|(A-Y) + (Y^T-A^T)\| \\
   &\leq \frac{1}{2} \|A-Y\| + \frac{1}{2} \|Y^T-A^T\| \\
   & \leq \|A-Y\|.
-\end{align*}$$
+\end{aligned}$$
 The minimum distance is achieved at $X = A_H$, but it
 generally may be achieved by other points, too -- the uniquenss that we
 see in the Frobenius norm doesn't generalize. For example, consider
@@ -172,13 +172,13 @@ Note that we can allow $X$ and $Y$ to deviate from having orthonormal
 columns, but there will always exist *some* representation of the stated
 form (by the SVD). Expanding the quadratic and playing with the cyclic
 property of traces gives
-$$\begin{align*}
+$$\begin{aligned}
   \phi(X, D, Y)
   &= \|A-XDY^T\|_F^2 \\
   &= \|A\|_F^2 - 2 \tr(A^T X D Y^T) + \|XDY^T\|_F^2 \\
   &= \|A\|_F^2 - 2 \tr(Y^T A X D) + \tr(Y^T Y D X^T X D) \\
   &= \|A\|_F^2 - 2 \tr(X^T A^T Y D) + \tr(X^T X D Y^T Y D)
-\end{align*}$$
+\end{aligned}$$
 Differentiating with respect to $X$, $Y$, and $D$ gives
 $$
   \delta \phi = 
@@ -188,11 +188,11 @@ $$
 $$
 Setting the gradient to
 zero, we have the stationary conditions
-$$\begin{align*}
+$$\begin{aligned}
   D &= \operatorname{diag}(Y^T A X) \\
   (YD-AX) D &= 0 \\
   (XD-A^T Y) D &= 0 
-\end{align*}$$
+\end{aligned}$$
 If $d_j > 0$, then the latter two equations give
 $$
   \begin{bmatrix} 0 & A \\ A^T & 0 \end{bmatrix}
