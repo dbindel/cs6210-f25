@@ -175,7 +175,6 @@ $$
 $$
 which we rearrange to get
 $$
- \label{basic-sensitivity}
   \delta \lambda = \frac{w^* (\delta A) v}{w^* v}.
 $$ {#eq-basic-sensitivity}
 This formal derivation of the first-order sensitivity of an eigenvalue

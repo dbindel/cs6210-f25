@@ -26,8 +26,8 @@ form an orthonormal basis for nested invariant subspaces of $A$; that
 is, the first $k$ columns of $Q$ form a $k$-dimensional invariant
 subspace of $A$. This structure of nested invariant subspaces gives us
 that 
-$
-  $AQ = QT,
+$$
+  AQ = QT,
 $$
 where $T$ is an upper triangular matrix. The
 factorization

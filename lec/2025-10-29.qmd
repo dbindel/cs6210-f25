@@ -191,8 +191,8 @@ better if we choose a shift *adaptively*, which was the basis for
 running Rayleigh quotient iteration. The same idea is the basis for the
 *shifted QR iteration*:
 $$\begin{aligned}
-  Q^{(k)} R^{(k)} &= A^{(k-1)} - \sigma_k I \label{sqr-1} \\
-  A^{(k)} &= R^{(k)} Q^{(k)} + \sigma_k I. \label{sqr-2}
+  Q^{(k)} R^{(k)} &= A^{(k-1)} - \sigma_k I \\
+  A^{(k)} &= R^{(k)} Q^{(k)} + \sigma_k I.
 \end{aligned}$$
 This iteration is equivalent to computing
 $$\begin{aligned}
@@ -237,7 +237,7 @@ roots of $A^{(k)}(n-1:n,n-1:n)$, equivalent to computing
 $$\begin{aligned}
   Q^{(k)} R^{(k)} &= (A^{(k-1)} - \sigma_{k+} I)(A^{(k-1)} - \sigma_{k-}) \\
   A^{(k)} &= (Q^{(k)})^* A^{(k-1)} Q^{(k)}.
-\end{aligned}$$ {#eq-sqr-2}
+\end{aligned}$$
 There is one catch here: even if we started with
 $A^{(0)}$ in Hessenberg form, it is unclear how to do this double-shift
 step in $O(n^2)$ time!
