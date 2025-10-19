@@ -131,20 +131,24 @@
 -
   date: 2025-10-20
   info: Introduction to eigenvalues
+  notes: 2025-10-20.html
 -
   date: 2025-10-22
   info: Perturbation theory
+  notes: 2025-10-22.html
 #
 # ==================
 # Week 10
 -
   date: 2025-10-27
   info: Power method and subspace iteration
+  notes: 2025-10-27.html
   hw:
     - info: HW 6 (due 11/03)
 -
   date: 2025-10-29
   info: Hessenberg QR iteration
+  notes: 2025-10-29.html
 #
 # ==================
 # Week 11
