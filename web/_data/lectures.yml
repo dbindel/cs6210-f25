@@ -155,10 +155,12 @@
 -
   date: 2025-11-03
   info: Theory for SEP and SVD
+  notes: 2025-11-03.html
   hw:
     - info: HW 7 (due 11/10)
 -
   date: 2025-11-05
+  notes: 2025-11-05.html
   info: Solvers for SEP and SVD
 #
 # ==================
