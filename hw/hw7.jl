@@ -35,7 +35,7 @@ function Pwalker(λ, n)
 	P = zeros(n,n)
 	for j = 1:n
 		imax = min(j+1,n)
-		P[1:imax,j] .= λ.^-(0:imax-1) / (λ^-imax-1)
+		P[1:imax,j] .= λ.^-(0:imax-1) * (1-1/λ) / (1-λ^-imax)
 	end
 	P
 end
