@@ -171,11 +171,13 @@
 -
   date: 2025-11-10
   info: Stationary iterations
+  notes: 2025-11-10.html
   hw:
     - info: HW 8 (due 11/17)
 -
   date: 2025-11-12
   info: Approximation from Krylov subspaces
+  notes: 2025-11-12.html
 #
 # ==================
 # Week 13
