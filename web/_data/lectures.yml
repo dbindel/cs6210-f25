@@ -184,11 +184,13 @@
 -
   date: 2025-11-17
   info: Lanczos and Arnoldi factorization
+  notes: 2025-11-17.html
   hw:
     - info: HW 9 (due 11/24)
 -
   date: 2025-11-19
   info: CG and GMRES
+  notes: 2025-11-19.html
 #
 # ==================
 # Week 14

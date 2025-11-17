@@ -2,7 +2,7 @@
 title: "CS 6210: Matrix Computations"
 subtitle: Approximation from Krylov subspaces
 author: David Bindel
-date: 2025-11-11
+date: 2025-11-12
 ---
 
 ::: {.content-hidden unless-format="html"}

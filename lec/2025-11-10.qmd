@@ -2,7 +2,7 @@
 title: "CS 6210: Matrix Computations"
 subtitle: Stationary iterations
 author: David Bindel
-date: 2025-11-09
+date: 2025-11-10
 ---
 
 ::: {.content-hidden unless-format="html"}
