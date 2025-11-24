@@ -89,8 +89,8 @@ factorization. We have the same stability issues for $LDL^T$
 factorization that we have for ordinary $LU$ factorization, so in
 general we might compute 
 $$
-  P A P^T = LDL^T,$
-$
+  P A P^T = LDL^T,
+$$
 where the details of various pivoting schemes are described in the
 book.
 
