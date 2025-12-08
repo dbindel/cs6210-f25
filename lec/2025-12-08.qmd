@@ -1,0 +1,132 @@
+
+---
+title: "CS 6210: Matrix Computations"
+subtitle: Review
+author: David Bindel
+date: 2025-12-08
+---
+
+::: {.content-hidden unless-format="html"}
+{{< include _commonm.tex >}}
+:::
+
+# Big ticket items
+
+## Linear algebra and calculus
+
+- Linear algebra background (abstract and concrete)
+
+  - Vectors, spaces, subspaces, bases
+
+  - Interpreting matrices: operators, mappings, quadratic forms
+
+  - Canonical forms
+
+- Calculus with matrices
+
+  - Sensitivity analysis and conditioning
+
+  - Variational notation for derivatives
+
+  - Optimization with quadratics
+
+  - Lagrange multipliers and constraints
+
+## Matrix algebra
+
+- Ways to write matrix-matrix products
+
+- Blocked matrices and blocked algorithms
+
+- Graph structures: sparse, diagonal, triangular, Hessenberg, etc
+
+- LA structures: symmetric, skew, orthogonal, etc
+
+- Other structure: Toeplitz, Hankel, other special matrices
+
+## The big problems
+
+$$\begin{aligned}
+  Ax &= b \\
+  \mbox{minimize } \|Ax&-b\|^2 \\
+  Ax &= x \lambda
+\end{aligned}$$
+
+## The big factorizations
+
+- LU and company ($LDL^T$ and Cholesky)
+
+- QR (economy and full)
+
+- SVD (economy and full)
+
+- Schur factorization
+
+- Symmetric eigendecomposition
+
+## Iterations
+
+- Iterative refinement
+
+- Stationary iterations (Jacobi, Gauss-Seidel, etc)
+
+- Krylov subspace definition
+
+- Approximation from a subspace and Galerkin
+
+- Characterization of CG and GMRES
+
+## Philosophical odds and ends
+
+- Identifying the right structure matters a lot
+
+- We need *both* algebra and analysis
+
+- When you don't know what else to do\... eigenvalues or SVD
+
+- I differentiate five expressions before breakfast!
+
+# What else?
+
+There is a lot that I wish I could get to in a course like this. If it
+were a two semester course, perhaps I would! Three things come
+immediately to mind.
+
+- LA for data science (c.f. CS 6241)
+
+  - Non-negative matrix factorizations
+
+  - Tensors and tensor factorizations
+
+  - More on factorization-based methods in stats/ML
+
+  - The linear algebra of multivariate normals
+
+  - Connections to convex optimization: active sets, quadratic
+    programming, etc
+
+- Iterative methods (c.f. CS 6220)
+
+  - More on multigrid and domain decomposition
+
+  - More on other "data-sparse" matrices
+
+  - More on elliptic PDEs, integral equations, etc
+
+- Eigensolvers
+
+  - More on eigensolvers (especially iterative ones)
+
+  - Much more on perturbation theory and sensitivity analysis
+
+  - Matrix functions, and complex analysis connections
+
+  - Connections to control theory
+
+  - More on orthogonal polynomials
+
+But there is always more to learn. If the course gave you a starting
+point to thinking about other corners of linear algebra that you care
+about for your research, then it was a success.
+
+I enjoyed the class this semester. I hope you did as well.
