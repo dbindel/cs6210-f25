@@ -86,9 +86,9 @@ The poles of $f$ are the eigenvalues of $A$ and the zeros are the eigenvalues of
 
 (1 point): Write a function to evaluate the function and derivative in $O(n^2)$ time given a Hessenberg factorization object `F = hessenberg(A)`.  Your code should take $O(n^2)$ time, and should look like
 
-    f, df = p4eval(z, F, b, c)
+    f, df = p4eval(z, F, b, c, d)
 
-(1 point): Introducing variables $v = (zI-A)^{-1} b$ and $u = (zI-A)^{-1} u$, write a generalized eigenvalue problem whose solutions correspond to critical points of $f(z)$.
+(1 point): Introducing variables $v = (zI-A)^{-1} b$ and $u = (zI-A)^{-1} v$, write a generalized eigenvalue problem whose solutions correspond to critical points of $f(z)$.
 
 (1 point): Using `eigvals(A,B)` (which computes solutions to the generalized eigenvalue problem $Ax = \lambda Bx$), find the (real) critical points of $f$.  Your code should look like
 
